@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-CN">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
+  <title>Vault - 更多</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#3c83f6",
+            "background-light": "#f8fafc",
+            "background-dark": "#0f172a",
+            "expense": "#f43f5e",
+            "income": "#10b981",
+          },
+          fontFamily: {
+            "display": ["Manrope", "sans-serif"],
+            "mono": ["JetBrains Mono", "ui-monospace", "monospace"]
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.5s ease-out forwards',
+            'slide-up': 'slideUp 0.5s ease-out forwards',
+            'blob': 'blob 10s infinite',
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+            slideUp: {
+              '0%': { opacity: '0', transform: 'translateY(20px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+            blob: {
+              '0%': { transform: 'translate(0px, 0px) scale(1)' },
+              '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+              '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+              '100%': { transform: 'translate(0px, 0px) scale(1)' },
+            }
+          }
+        },
+      },
+    }
+  </script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+  <style>
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Manrope', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+
+    .noise-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 50;
+      opacity: 0.05;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    }
+
+    .dark .noise-overlay {
+      opacity: 0.07;
+      mix-blend-mode: overlay;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+
+    .dark .glass {
+      background: rgba(17, 25, 40, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+
+    .dark .glass-card {
+      background: rgba(17, 25, 40, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .gradient-bg {
+      background: #f8fafc;
+      background: radial-gradient(at top left, #f0f9ff, #f8fafc);
+    }
+
+    .dark .gradient-bg {
+      background: #0f172a;
+      background: radial-gradient(at top left, #0f172a, #020617);
+    }
+
+    .nav-glass {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .dark .nav-glass {
+      background: rgba(15, 23, 42, 0.85);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .fab-button {
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 10px 30px -10px rgba(59, 130, 246, 0.5);
+    }
+
+    .fab-button:active {
+      transform: scale(0.95);
+    }
+
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .hide-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+
+<body class="gradient-bg text-slate-900 dark:text-slate-100 flex flex-col h-[100dvh] overflow-hidden">
+  <!-- Noise Overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Ambient Blobs -->
+  <div class="fixed inset-0 pointer-events-none z-[-1]">
+    <div class="absolute top-[-10%] right-[-10%] w-[400px] h-[400px] bg-blue-500/10 dark:bg-blue-900/10 rounded-full blur-[80px] animate-blob"></div>
+    <div class="absolute bottom-[-10%] left-[-10%] w-[300px] h-[300px] bg-purple-500/10 dark:bg-purple-900/10 rounded-full blur-[80px] animate-blob" style="animation-delay: 2s"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="flex-none px-6 pt-12 pb-4 z-20 animate-fade-in relative">
+    <div class="flex items-center justify-between">
+      <h1 class="text-2xl font-bold font-display tracking-tight text-slate-900 dark:text-white">更多</h1>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 overflow-y-auto hide-scrollbar pb-32 relative z-10 px-6 pt-2">
+    
+    <!-- Settings Group: Financial Management -->
+    <div class="mb-8 animate-slide-up" style="animation-delay: 0.1s;">
+      <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 px-2">财务管理</h2>
+      <div class="glass-card rounded-[20px] overflow-hidden divide-y divide-slate-100 dark:divide-white/5">
+        
+        <!-- Budget Setting -->
+        <div class="p-4 flex items-center justify-between active:bg-slate-50 dark:active:bg-slate-800/50 cursor-pointer transition-colors" onclick="openBudgetDrawer()">
+          <div class="flex items-center gap-4">
+            <div class="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/30 text-primary flex items-center justify-center">
+              <span class="material-symbols-outlined text-[20px]">track_changes</span>
+            </div>
+            <div>
+              <p class="text-sm font-bold text-slate-900 dark:text-white mb-0.5">月度预算</p>
+              <p class="text-[11px] text-slate-400">设置用于统计对比的警戒线</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span id="budget-display" class="font-mono text-[13px] font-bold text-slate-500 dark:text-slate-400">未设置</span>
+            <span class="material-symbols-outlined text-slate-300 dark:text-slate-600 text-[18px]">chevron_right</span>
+          </div>
+        </div>
+
+        <!-- Category Config -->
+        <div class="p-4 flex items-center justify-between active:bg-slate-50 dark:active:bg-slate-800/50 cursor-pointer transition-colors" onclick="alert('类别配置功能开发中')">
+          <div class="flex items-center gap-4">
+            <div class="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 flex items-center justify-center">
+              <span class="material-symbols-outlined text-[20px]">category</span>
+            </div>
+            <div>
+              <p class="text-sm font-bold text-slate-900 dark:text-white mb-0.5">类别配置</p>
+              <p class="text-[11px] text-slate-400">自定义支出与收入类别</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-slate-300 dark:text-slate-600 text-[18px]">chevron_right</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Settings Group: Preferences -->
+    <div class="mb-8 animate-slide-up" style="animation-delay: 0.2s;">
+      <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 px-2">偏好设置</h2>
+      <div class="glass-card rounded-[20px] overflow-hidden divide-y divide-slate-100 dark:divide-white/5">
+        
+        <!-- Theme Toggle -->
+        <div class="p-4 flex items-center justify-between active:bg-slate-50 dark:active:bg-slate-800/50 cursor-pointer transition-colors" onclick="toggleTheme()">
+          <div class="flex items-center gap-4">
+            <div class="w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 flex items-center justify-center">
+              <span class="material-symbols-outlined text-[20px] dark:hidden">light_mode</span>
+              <span class="material-symbols-outlined text-[20px] hidden dark:block">dark_mode</span>
+            </div>
+            <div>
+              <p class="text-sm font-bold text-slate-900 dark:text-white mb-0.5">外观模式</p>
+              <p class="text-[11px] text-slate-400">切换深色与浅色主题</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5">
+             <span id="theme-display" class="text-[13px] font-bold text-slate-500 dark:text-slate-400">浅色</span>
+             <span class="material-symbols-outlined text-slate-300 dark:text-slate-600 text-[18px]">sync</span>
+          </div>
+        </div>
+
+        <!-- Data Export -->
+        <div class="p-4 flex items-center justify-between active:bg-slate-50 dark:active:bg-slate-800/50 cursor-pointer transition-colors" onclick="openExportDrawer()">
+          <div class="flex items-center gap-4">
+            <div class="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 flex items-center justify-center">
+              <span class="material-symbols-outlined text-[20px]">download</span>
+            </div>
+            <div>
+              <p class="text-sm font-bold text-slate-900 dark:text-white mb-0.5">数据导出</p>
+              <p class="text-[11px] text-slate-400">将账单记录导出为 CSV (Excel)</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-slate-300 dark:text-slate-600 text-[18px]">chevron_right</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Settings Group: Developer Options -->
+    <div class="mb-8 animate-slide-up" style="animation-delay: 0.25s;">
+      <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 px-2">开发者选项</h2>
+      <div class="glass-card rounded-[20px] overflow-hidden divide-y divide-slate-100 dark:divide-white/5 border border-dashed border-slate-300 dark:border-slate-700">
+        
+        <!-- Generate Mock Data -->
+        <div class="p-4 flex items-center justify-between active:bg-slate-50 dark:active:bg-slate-800/50 cursor-pointer transition-colors" onclick="generateMockData()">
+          <div class="flex items-center gap-4">
+            <div class="w-10 h-10 rounded-full bg-orange-50 dark:bg-orange-900/30 text-orange-500 flex items-center justify-center">
+              <span class="material-symbols-outlined text-[20px]">data_object</span>
+            </div>
+            <div>
+              <p class="text-sm font-bold text-slate-900 dark:text-white mb-0.5">生成测试数据</p>
+              <p class="text-[11px] text-slate-400">随机生成过去6个月的交易记录</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Clear Data (Danger) -->
+    <div class="animate-slide-up" style="animation-delay: 0.3s;">
+      <div class="glass-card rounded-[20px] overflow-hidden">
+        <div class="p-4 flex items-center justify-center active:bg-rose-50 dark:active:bg-rose-900/20 cursor-pointer transition-colors group" onclick="clearData()">
+          <p class="text-sm font-bold text-rose-500 group-active:scale-95 transition-transform">清除所有数据</p>
+        </div>
+      </div>
+      <p class="text-center text-[10px] text-slate-400 mt-4 font-mono">Vault v0.4.0</p>
+    </div>
+
+  </main>
+
+  <!-- Budget Keyboard Drawer -->
+  <div id="budget-drawer-overlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] transition-opacity duration-300 opacity-0 hidden" onclick="closeBudgetDrawer()"></div>
+  <div id="budget-drawer" class="fixed bottom-0 left-0 right-0 glass-card rounded-t-[32px] z-[60] transform translate-y-full transition-transform duration-300 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+    
+    <!-- Drawer Handle -->
+    <div class="w-full flex justify-center pt-4 pb-2" onclick="closeBudgetDrawer()">
+      <div class="w-12 h-1.5 bg-slate-300 dark:bg-slate-600 rounded-full"></div>
+    </div>
+
+    <!-- Amount Display -->
+    <div class="px-6 py-4 flex flex-col items-center justify-center border-b border-slate-200/50 dark:border-slate-700/50 relative">
+      <p class="text-xs font-bold text-slate-500 mb-1">设置月度预算</p>
+      <div class="flex items-baseline gap-1">
+        <span class="text-2xl font-bold text-primary">¥</span>
+        <span id="budget-input-display" class="text-4xl font-mono font-bold text-slate-900 dark:text-white">0</span>
+      </div>
+      <button onclick="clearBudgetInput()" class="absolute right-6 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 active:scale-95 transition-all">
+        <span class="material-symbols-outlined text-[20px]">delete_sweep</span>
+      </button>
+    </div>
+
+    <!-- Keypad -->
+    <div class="grid grid-cols-3 gap-3 p-6 pb-2 select-none">
+      <button onclick="pressBudgetNum('1')" class="h-14 rounded-2xl glass dark:bg-slate-800 dark:border-white/5 text-2xl font-medium text-slate-700 dark:text-slate-200 active:scale-95 transition-transform">1</button>
+      <button onclick="pressBudgetNum('2')" class="h-14 rounded-2xl glass dark:bg-slate-800 dark:border-white/5 text-2xl font-medium text-slate-700 dark:text-slate-200 active:scale-95 transition-transform">2</button>
+      <button onclick="pressBudgetNum('3')" class="h-14 rounded-2xl glass dark:bg-slate-800 dark:border-white/5 text-2xl font-medium text-slate-700 dark:text-slate-200 active:scale-95 transition-transform">3</button>
+      
+      <button onclick="pressBudgetNum('4')" class="h-14 rounded-2xl glass dark:bg-slate-800 dark:border-white/5 text-2xl font-medium text-slate-700 dark:text-slate-200 active:scale-95 transition-transform">4</button>
+      <button onclick="pressBudgetNum('5')" class="h-14 rounded-2xl glass dark:bg-slate-800 dark:border-white/5 text-2xl font-medium text-slate-700 dark:text-slate-200 active:scale-95 transition-transform">5</button>
+      <button onclick="pressBudgetNum('6')" class="h-14 rounded-2xl glass dark:bg-slate-800 dark:border-white/5 text-2xl font-medium text-slate-700 dark:text-slate-200 active:scale-95 transition-transform">6</button>
+      
+      <button onclick="pressBudgetNum('7')" class="h-14 rounded-2xl glass dark:bg-slate-800 dark:border-white/5 text-2xl font-medium text-slate-700 dark:text-slate-200 active:scale-95 transition-transform">7</button>
+      <button onclick="pressBudgetNum('8')" class="h-14 rounded-2xl glass dark:bg-slate-800 dark:border-white/5 text-2xl font-medium text-slate-700 dark:text-slate-200 active:scale-95 transition-transform">8</button>
+      <button onclick="pressBudgetNum('9')" class="h-14 rounded-2xl glass dark:bg-slate-800 dark:border-white/5 text-2xl font-medium text-slate-700 dark:text-slate-200 active:scale-95 transition-transform">9</button>
+      
+      <button onclick="pressBudgetNum('.')" class="h-14 rounded-2xl glass dark:bg-slate-800 dark:border-white/5 text-2xl font-medium text-slate-700 dark:text-slate-200 active:scale-95 transition-transform">.</button>
+      <button onclick="pressBudgetNum('0')" class="h-14 rounded-2xl glass dark:bg-slate-800 dark:border-white/5 text-2xl font-medium text-slate-700 dark:text-slate-200 active:scale-95 transition-transform">0</button>
+      <button onclick="pressBudgetBackspace()" class="h-14 rounded-2xl glass dark:bg-slate-800 dark:border-white/5 text-xl font-medium text-slate-700 dark:text-slate-200 flex items-center justify-center active:scale-95 transition-transform">
+        <span class="material-symbols-outlined text-[28px]">backspace</span>
+      </button>
+    </div>
+
+    <!-- Actions -->
+    <div class="grid grid-cols-2 gap-4 px-6 pb-8 pt-2">
+      <button onclick="closeBudgetDrawer()" class="h-12 rounded-2xl border border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 font-bold active:bg-slate-50 dark:active:bg-slate-800 transition-colors">
+        取消
+      </button>
+      <button onclick="saveBudgetFromDrawer()" class="h-12 rounded-2xl bg-primary text-white font-bold shadow-lg shadow-blue-500/30 active:scale-95 transition-all">
+        保存
+      </button>
+    </div>
+  </div>
+
+  <!-- Export Drawer -->
+  <div id="export-drawer-overlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] transition-opacity duration-300 opacity-0 hidden" onclick="closeExportDrawer()"></div>
+  <div id="export-drawer" class="fixed bottom-0 left-0 right-0 glass-card rounded-t-[32px] z-[60] transform translate-y-full transition-transform duration-300 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+    
+    <!-- Drawer Handle -->
+    <div class="w-full flex justify-center pt-4 pb-2" onclick="closeExportDrawer()">
+      <div class="w-12 h-1.5 bg-slate-300 dark:bg-slate-600 rounded-full"></div>
+    </div>
+
+    <div class="px-6 py-4 flex flex-col items-center">
+      <p class="text-sm font-bold text-slate-900 dark:text-white mb-6">选择导出范围</p>
+      
+      <!-- Presets -->
+      <div class="grid grid-cols-3 gap-3 w-full mb-8">
+        <button onclick="selectExportPreset('lastMonth')" class="flex flex-col items-center justify-center p-3 py-4 rounded-2xl glass hover:bg-white/50 dark:hover:bg-slate-800 transition-all active:scale-95">
+          <span class="text-sm font-bold text-slate-700 dark:text-slate-200">上月</span>
+        </button>
+        <button onclick="selectExportPreset('lastYear')" class="flex flex-col items-center justify-center p-3 py-4 rounded-2xl glass hover:bg-white/50 dark:hover:bg-slate-800 transition-all active:scale-95">
+          <span class="text-sm font-bold text-slate-700 dark:text-slate-200">去年</span>
+        </button>
+        <button onclick="selectExportPreset('all')" class="flex flex-col items-center justify-center p-3 py-4 rounded-2xl glass hover:bg-white/50 dark:hover:bg-slate-800 transition-all active:scale-95">
+          <span class="text-sm font-bold text-slate-700 dark:text-slate-200">全部</span>
+        </button>
+      </div>
+
+      <!-- Custom Date Range -->
+      <div class="w-full space-y-3 mb-10">
+        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-1">自定义日期范围</p>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1.5">
+            <label class="text-[10px] text-slate-500 ml-1">开始日期</label>
+            <input type="date" id="export-start-date" class="w-full bg-slate-100 dark:bg-slate-800 border-none rounded-xl text-xs font-mono p-3 focus:ring-2 focus:ring-primary dark:text-white">
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-[10px] text-slate-500 ml-1">结束日期</label>
+            <input type="date" id="export-end-date" class="w-full bg-slate-100 dark:bg-slate-800 border-none rounded-xl text-xs font-mono p-3 focus:ring-2 focus:ring-primary dark:text-white">
+          </div>
+        </div>
+      </div>
+
+      <!-- Export Action -->
+      <button onclick="performExport()" class="w-full h-14 rounded-2xl bg-primary text-white font-bold text-lg shadow-lg shadow-blue-500/30 active:scale-95 transition-all flex items-center justify-center gap-2 mb-8">
+        <span class="material-symbols-outlined">download</span>
+        开始导出 CSV
+      </button>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav class="fixed bottom-0 w-full nav-glass z-50 pb-[env(safe-area-inset-bottom)]">
+    <div class="flex items-center justify-around h-[68px] px-6 relative">
+      
+      <!-- Overview Tab -->
+      <a href="Overview.html" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors w-16">
+        <span class="material-symbols-outlined text-[24px]">bar_chart</span>
+        <span class="text-[10px] font-bold">概览</span>
+      </a>
+
+      <!-- Add Entry FAB Container -->
+      <div class="relative w-16 h-full flex justify-center">
+        <a href="AddEntry.html" class="absolute -top-5 fab-button w-[52px] h-[52px] rounded-full flex items-center justify-center text-white shadow-lg">
+          <span class="material-symbols-outlined text-[28px]">add</span>
+        </a>
+      </div>
+
+      <!-- Settings Tab (Active) -->
+      <a href="Settings.html" class="flex flex-col items-center gap-1 text-primary transition-colors w-16">
+        <span class="material-symbols-outlined text-[24px]">settings</span>
+        <span class="text-[10px] font-bold">更多</span>
+      </a>
+
+    </div>
+  </nav>
+
+  <script>
+    // Theme Logic
+    function initTheme() {
+      const stored = localStorage.getItem('theme');
+      const html = document.documentElement;
+      const themeDisplay = document.getElementById('theme-display');
+      
+      if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        html.classList.add('dark');
+        themeDisplay.textContent = '深色';
+      } else {
+        html.classList.remove('dark');
+        themeDisplay.textContent = '浅色';
+      }
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const themeDisplay = document.getElementById('theme-display');
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+        themeDisplay.textContent = '浅色';
+      } else {
+        html.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+        themeDisplay.textContent = '深色';
+      }
+    }
+
+    // Budget Logic
+    function loadBudget() {
+      const display = document.getElementById('budget-display');
+      const savedBudget = localStorage.getItem('vault_budget');
+      if (savedBudget) {
+        display.textContent = `¥${parseInt(savedBudget).toLocaleString()}`;
+        display.classList.remove('text-slate-500', 'dark:text-slate-400');
+        display.classList.add('text-primary');
+      } else {
+        display.textContent = '未设置';
+        display.classList.add('text-slate-500', 'dark:text-slate-400');
+        display.classList.remove('text-primary');
+      }
+    }
+
+    let currentBudgetInput = '0';
+
+    function openBudgetDrawer() {
+      const savedBudget = localStorage.getItem('vault_budget');
+      currentBudgetInput = savedBudget ? savedBudget : '0';
+      updateBudgetDisplay();
+      
+      const overlay = document.getElementById('budget-drawer-overlay');
+      const drawer = document.getElementById('budget-drawer');
+      
+      overlay.classList.remove('hidden');
+      // reflow
+      void overlay.offsetWidth;
+      overlay.classList.remove('opacity-0');
+      
+      drawer.classList.remove('translate-y-full');
+    }
+
+    function closeBudgetDrawer() {
+      const overlay = document.getElementById('budget-drawer-overlay');
+      const drawer = document.getElementById('budget-drawer');
+      
+      overlay.classList.add('opacity-0');
+      drawer.classList.add('translate-y-full');
+      
+      setTimeout(() => {
+        overlay.classList.add('hidden');
+      }, 300);
+    }
+
+    function updateBudgetDisplay() {
+      document.getElementById('budget-input-display').textContent = currentBudgetInput;
+    }
+
+    function clearBudgetInput() {
+      currentBudgetInput = '0';
+      updateBudgetDisplay();
+    }
+
+    function pressBudgetNum(num) {
+      if (currentBudgetInput === '0' && num !== '.') {
+        currentBudgetInput = num;
+      } else if (num === '.' && currentBudgetInput.includes('.')) {
+        return;
+      } else {
+        if (currentBudgetInput.length < 8) {
+          currentBudgetInput += num;
+        }
+      }
+      updateBudgetDisplay();
+    }
+
+    function pressBudgetBackspace() {
+      if (currentBudgetInput.length > 1) {
+        currentBudgetInput = currentBudgetInput.slice(0, -1);
+      } else {
+        currentBudgetInput = '0';
+      }
+      updateBudgetDisplay();
+    }
+
+    function saveBudgetFromDrawer() {
+      const num = parseFloat(currentBudgetInput);
+      if (isNaN(num) || num === 0) {
+        // Clear
+        localStorage.removeItem('vault_budget');
+      } else {
+        localStorage.setItem('vault_budget', parseInt(num).toString()); 
+      }
+      loadBudget();
+      closeBudgetDrawer();
+    }
+
+    // Export Logic
+    function openExportDrawer() {
+      const overlay = document.getElementById('export-drawer-overlay');
+      const drawer = document.getElementById('export-drawer');
+      
+      overlay.classList.remove('hidden');
+      void overlay.offsetWidth;
+      overlay.classList.remove('opacity-0');
+      drawer.classList.remove('translate-y-full');
+      
+      // Default dates: Today
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('export-start-date').value = today;
+      document.getElementById('export-end-date').value = today;
+    }
+
+    function closeExportDrawer() {
+      const overlay = document.getElementById('export-drawer-overlay');
+      const drawer = document.getElementById('export-drawer');
+      overlay.classList.add('opacity-0');
+      drawer.classList.add('translate-y-full');
+      setTimeout(() => overlay.classList.add('hidden'), 300);
+    }
+
+    function selectExportPreset(preset) {
+      const startInput = document.getElementById('export-start-date');
+      const endInput = document.getElementById('export-end-date');
+      const now = new Date();
+      
+      if (preset === 'lastMonth') {
+        const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+        startInput.value = lastMonth.toISOString().split('T')[0];
+        endInput.value = lastMonthEnd.toISOString().split('T')[0];
+      } else if (preset === 'lastYear') {
+        const lastYearStart = new Date(now.getFullYear() - 1, 0, 1);
+        const lastYearEnd = new Date(now.getFullYear() - 1, 11, 31);
+        startInput.value = lastYearStart.toISOString().split('T')[0];
+        endInput.value = lastYearEnd.toISOString().split('T')[0];
+      } else if (preset === 'all') {
+        startInput.value = '2000-01-01'; // Far past
+        endInput.value = now.toISOString().split('T')[0];
+      }
+    }
+
+    function performExport() {
+      const startDate = new Date(document.getElementById('export-start-date').value);
+      const endDate = new Date(document.getElementById('export-end-date').value);
+      endDate.setHours(23, 59, 59, 999); // Include full day
+
+      const transactions = JSON.parse(localStorage.getItem('vault_transactions') || '[]');
+      const filtered = transactions.filter(t => {
+        const d = new Date(t.date);
+        return d >= startDate && d <= endDate;
+      }).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      if (filtered.length === 0) {
+        alert('所选范围内没有交易记录。');
+        return;
+      }
+
+      // Category Mapping (Simplified for export)
+      const catMap = {
+        food: '餐饮', transport: '交通', shopping: '购物', housing: '居住', 
+        clothing: '服饰', telecom: '通讯', dining: '聚餐', entertainment: '娱乐', 
+        travel: '旅行', medical: '医疗', salary: '工资', bonus: '奖金', 
+        investment: '理财', parttime: '兼职', refund: '退款'
+      };
+
+      // Generate CSV
+      let csvContent = '\uFEFF'; // Add BOM for Excel UTF-8
+      csvContent += '日期,类型,分类,金额,备注\n';
+      
+      filtered.forEach(t => {
+        const dateStr = new Date(t.date).toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+        const typeStr = t.type === 'income' ? '收入' : '支出';
+        const catStr = catMap[t.category] || t.category;
+        const amountStr = t.amount;
+        const noteStr = (t.note || '').replace(/,/g, '，'); // Escape commas
+        csvContent += `${dateStr},${typeStr},${catStr},${amountStr},${noteStr}\n`;
+      });
+
+      // Filename construction
+      const startStr = document.getElementById('export-start-date').value.replace(/-/g, '');
+      const endStr = document.getElementById('export-end-date').value.replace(/-/g, '');
+      const filename = `Vault_Export_${startStr}_to_${endStr}.csv`;
+
+      // Trigger Download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+      
+      closeExportDrawer();
+    }
+
+    function generateMockData() {
+      const CATEGORIES = {
+        expense: ['food', 'transport', 'shopping', 'housing', 'clothing', 'telecom', 'dining', 'entertainment', 'travel', 'medical'],
+        income: ['salary', 'bonus', 'investment', 'parttime', 'refund']
+      };
+      
+      const data = [];
+      const today = new Date();
+      // Generate for last 6 months
+      for (let i = 0; i < 180; i++) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+
+        // Random number of transactions per day (0-3)
+        const count = Math.floor(Math.random() * 4);
+        for (let j = 0; j < count; j++) {
+          const types = ['expense', 'expense', 'expense', 'income']; // 75% expense
+          const type = types[Math.floor(Math.random() * types.length)];
+          const cats = CATEGORIES[type];
+          const cat = cats[Math.floor(Math.random() * cats.length)];
+
+          let amount;
+          if (type === 'expense') amount = (Math.random() * 50 + 10).toFixed(2); // 10-60
+          else amount = (Math.random() * 5000 + 2000).toFixed(2); // 2000-7000 (salary-like) or small
+
+          // Adjust amounts for realism
+          if (type === 'income' && Math.random() > 0.3) amount = (Math.random() * 200 + 50).toFixed(2); // Small income
+
+          data.push({
+            id: Date.now() + Math.random().toString(),
+            type,
+            amount,
+            category: cat,
+            date: date.toISOString(),
+            timestamp: date.getTime(),
+            note: '模拟数据'
+          });
+        }
+      }
+      localStorage.setItem('vault_transactions', JSON.stringify(data));
+      alert('已成功生成过去 6 个月的测试数据！现在去概览页看看吧。');
+    }
+
+    function clearData() {
+      if(confirm('警告：此操作将删除所有本地记账数据及设置，且无法恢复！是否继续？')) {
+         localStorage.clear();
+         alert('数据已清除。');
+         loadBudget();
+         initTheme();
+      }
+    }
+
+    // Init
+    window.onload = () => {
+      initTheme();
+      loadBudget();
+    };
+  </script>
+</body>
+
+</html>

@@ -24,15 +24,13 @@
 
 ## 2. 汇总卡片组 (Summary Cards)
 
-横向滚动的玻璃态卡片，展示核心指标：
+采用紧凑的多行网格布局 (Bento Grid)，动态自适应月度/年度状态：
 
-| 卡片 | 数据 | 样式 |
-|------|------|------|
-| **结余** | `¥X,XXX` | 蓝色主色 |
-| **总收入** | `¥X,XXX` + 涨跌幅 | 绿色 + `↑ 12%` 徽章 |
-| **总支出** | `¥X,XXX` + 涨跌幅 | 红色 + `↓ 5%` 徽章 |
-| **日均支出** | `¥XXX.XX` | 橙色 |
-| **预算剩余** | 环形进度条 `75%` | 动态颜色 (绿/黄/红) |
+- **月度视图** (5张卡片, `grid-cols-6`)：
+  - 第一行：结余 (`col-span-4`), 预算剩余 (`col-span-2` 包含微型进度环)
+  - 第二行：总收入 (`col-span-2`), 总支出 (`col-span-2`), 日均支出 (`col-span-2`)
+- **年度视图** (4张卡片, 隐藏预算卡片)：
+  - 自动切换为 2x2 网格 (每个 `col-span-3`)
 
 ### 预算进度环逻辑
 - `>50%` 剩余: 绿色 (Healthy)
@@ -109,33 +107,43 @@
 ## 6. 技术实现
 
 ### 6.1 依赖
-- **Chart.js**: CDN 引入, 用于折线图和柱状图
+- **原型阶段**: Chart.js (CDN), 用于折线图和柱状图
+- **正式版**: react-native-chart-kit 或 Victory Native (原生渲染)
 
-### 6.2 核心服务
-```javascript
-const StatisticsService = {
-  getPeriodStats(transactions, period, referenceDate) { ... },
-  getTrendData(transactions, periodType, referenceDate) { ... },
-  getStructureData(transactions, periodType, referenceDate) { ... }
+### 6.2 核心服务（已规划提取为独立模块）
+
+将从 `Prototype/Overview.html` 提取至 `src/services/StatisticsService.ts`:
+
+```typescript
+// src/services/StatisticsService.ts
+export const StatisticsService = {
+  getPeriodStats(transactions: Transaction[], period: PeriodType, referenceDate: Date): PeriodStats { ... },
+  getTrendData(transactions: Transaction[], periodType: PeriodType, referenceDate: Date): TrendData { ... },
+  getStructureData(transactions: Transaction[], periodType: PeriodType, referenceDate: Date): StructureData { ... }
 };
 ```
 
 ### 6.3 状态管理
-```javascript
-const statsState = {
-  period: 'month',        // 'month' | 'year'
-  currentDate: new Date(),
-  chartMode: 'trend',     // 'trend' | 'structure'
-  chartActiveIndex: null, // 点击高亮的索引
-  listType: 'expense'     // 'expense' | 'income'
-};
+
+原型使用全局对象，正式版迁移至 Zustand Store (`src/stores/useStatsStore.ts`):
+
+```typescript
+interface StatsState {
+  period: 'month' | 'year';
+  currentDate: Date;
+  chartMode: 'trend' | 'structure';
+  chartActiveIndex: number | null;
+  listType: 'expense' | 'income';
+}
 ```
+
+> 详细架构设计参见 `doc/Architecture.md`
 
 ---
 
 ## 7. 待办 & 未来规划
 
-- [ ] 预算设置功能 (在"更多"页面配置)
+- [x] 预算设置功能 (在"更多"页面配置)
 - [ ] 图表全屏放大模式
 - [ ] 导出 PDF/图片
 - [ ] 智能洞察 (如 "本月餐饮支出比上月增加 15%")
