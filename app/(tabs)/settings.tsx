@@ -39,6 +39,30 @@ export default function SettingsScreen() {
     );
   };
 
+  const handleGenerateMockData = () => {
+    Alert.alert(
+      '生成演示数据',
+      '此操作将清除所有现有数据，并生成过去 180 天的高拟真收支记录用于演示。确定要继续吗？',
+      [
+        { text: '取消', style: 'cancel' },
+        { 
+          text: '确定生成', 
+          onPress: async () => {
+            try {
+              const { MockDataService } = await import('@/src/services/MockDataService');
+              const count = await MockDataService.generateMockData();
+              await useTransactionStore.getState().fetchTransactions();
+              Alert.alert('生成成功', `已成功生成 ${count} 条演示记录！`);
+            } catch (e) {
+              console.error(e);
+              Alert.alert('生成失败', '生成演示数据时出现错误。');
+            }
+          }
+        },
+      ]
+    );
+  };
+
   const menuItems: { title: string; items: any[] }[] = [
     {
       title: '账户设置',
@@ -96,6 +120,19 @@ export default function SettingsScreen() {
           icon: 'code', 
           color: '#334155',
           onPress: () => Linking.openURL('https://github.com')
+        },
+      ]
+    },
+    {
+      title: '开发者选项',
+      items: [
+        {
+          id: 'generate_mock',
+          label: '生成演示数据',
+          value: '180天数据',
+          icon: 'science',
+          color: '#eab308',
+          onPress: handleGenerateMockData
         },
         { 
           id: 'clear', 

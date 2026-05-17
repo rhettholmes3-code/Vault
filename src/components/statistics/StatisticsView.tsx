@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, Text, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useStatsStore } from '@/src/stores/useStatsStore';
+import { useTransactionStore } from '@/src/stores/useTransactionStore';
 import { StatisticsService } from '@/src/services/StatisticsService';
 import { PeriodStats, TrendData, StructureData } from '@/src/types/statistics';
 import { SummaryBentoGrid } from './SummaryBentoGrid';
@@ -21,6 +22,8 @@ export function StatisticsView() {
   
   const goToNextPeriod = useStatsStore(s => s.goToNextPeriod);
   const goToPrevPeriod = useStatsStore(s => s.goToPrevPeriod);
+  
+  const transactions = useTransactionStore(s => s.transactions);
   
   const [stats, setStats] = useState<PeriodStats | null>(null);
   const [trendData, setTrendData] = useState<TrendData | null>(null);
@@ -54,7 +57,7 @@ export function StatisticsView() {
     fetchData();
     
     return () => { mounted = false; };
-  }, [currentDate, periodType]);
+  }, [currentDate, periodType, transactions]);
 
   const displayDate = periodType === 'month' 
     ? `${currentDate.getFullYear()}年${currentDate.getMonth() + 1}月`
