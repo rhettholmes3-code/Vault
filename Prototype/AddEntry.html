@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-CN">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
+    <title>Vault - 记一笔</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3c83f6",
+                        "primary-dark": "#2563eb",
+                        "background-light": "#f8fafc",
+                        "background-dark": "#0f172a",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1e293b",
+                        "expense": "#f43f5e", // Rose-500
+                        "income": "#10b981",  // Emerald-500
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"],
+                        "mono": ["JetBrains Mono", "ui-monospace", "SFMono-Regular", "monospace"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.75rem",
+                        "lg": "1rem",
+                        "xl": "1.25rem",
+                        "2xl": "1.5rem",
+                        "3xl": "2rem",
+                        "full": "9999px"
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.3s ease-out forwards',
+                        'slide-up': 'slideUp 0.4s ease-out forwards',
+                        'blob': 'blob 10s infinite',
+                        'pop': 'pop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        },
+                        pop: {
+                            '0%': { transform: 'scale(0.95)' },
+                            '100%': { transform: 'scale(1.1)' },
+                        }
+                    }
+                },
+            },
+        }
+    </script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Manrope', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            user-select: none;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .dark .glass {
+            background: rgba(17, 25, 40, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-strong {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .dark .glass-strong {
+            background: rgba(17, 25, 40, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .category-btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Updated Active State: Scaling + Glow instead of Ring */
+        .category-btn.active .icon-container {
+            transform: scale(1.15);
+            box-shadow: 0 0 15px currentColor;
+        }
+
+        .category-btn.active span.label {
+            font-weight: 700;
+            color: #0f172a;
+            /* Slate-900 */
+        }
+
+        .dark .category-btn.active span.label {
+            color: #f8fafc;
+        }
+
+        .keypad-btn {
+            transition: background-color 0.05s, transform 0.05s;
+        }
+
+        .keypad-btn:active {
+            background-color: rgba(255, 255, 255, 0.25);
+            transform: scale(0.92);
+        }
+
+        /* Background Transitions */
+        body.mode-expense {
+            background: radial-gradient(at top left, #fff1f2, #f8fafc);
+        }
+
+        .dark body.mode-expense {
+            background: radial-gradient(at top left, #1e1b4b, #020617);
+            /* darker blue/slate */
+        }
+
+        body.mode-income {
+            background: radial-gradient(at top left, #ecfdf5, #f8fafc);
+        }
+
+        .dark body.mode-income {
+            background: radial-gradient(at top left, #064e3b, #020617);
+        }
+
+        .transition-bg {
+            transition: background 0.5s ease-in-out;
+        }
+
+        /* Date Picker reset */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: auto;
+            height: auto;
+            color: transparent;
+            background: transparent;
+        }
+    </style>
+</head>
+
+<body class="mode-expense transition-bg text-slate-900 dark:text-slate-100 h-[100dvh] flex flex-col overflow-hidden">
+
+    <!-- Ambient Background -->
+    <div class="fixed inset-0 pointer-events-none z-[-1]">
+        <div
+            class="absolute top-[-20%] left-[-20%] w-[500px] h-[500px] bg-blue-500/10 dark:bg-blue-900/10 rounded-full blur-[80px] animate-blob">
+        </div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-purple-500/10 dark:bg-purple-900/10 rounded-full blur-[80px] animate-blob"
+            style="animation-delay: 2s"></div>
+    </div>
+
+    <!-- Header / Segmented Control -->
+    <header class="pt-6 pb-2 px-6 flex-none z-20">
+        <div
+            class="relative bg-black/5 dark:bg-black/20 p-1 rounded-2xl flex max-w-sm mx-auto backdrop-blur-md transition-colors">
+            <!-- Active Indicator -->
+            <div id="type-indicator"
+                class="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white dark:bg-slate-700 rounded-xl shadow-sm transition-all duration-300 ease-[cubic-bezier(0.25,0.8,0.25,1)] left-1">
+            </div>
+
+            <button onclick="toggleType('expense')" id="btn-expense"
+                class="relative z-10 flex-1 py-2 text-sm font-bold text-rose-500 transition-colors duration-300 text-center">
+                支出
+            </button>
+            <button onclick="toggleType('income')" id="btn-income"
+                class="relative z-10 flex-1 py-2 text-sm font-medium text-slate-500 dark:text-slate-400 transition-colors duration-300 text-center">
+                收入
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content (Categories) -->
+    <main class="flex-1 px-4 py-4 overflow-y-auto hide-scrollbar z-10 flex flex-col justify-start items-center">
+        <div id="category-grid" class="grid grid-cols-5 gap-y-6 gap-x-2 w-full max-w-sm animate-fade-in">
+            <!-- Categories injected by JS -->
+        </div>
+    </main>
+
+    <!-- Input Area (Pinned Bottom) -->
+    <section
+        class="flex-none glass-strong dark:bg-[#1e293b] dark:glass-none dark:border-t dark:border-white/10 rounded-t-[2.5rem] shadow-[0_-4px_30px_rgba(0,0,0,0.05)] z-30 pb-safe transition-colors duration-300">
+
+        <!-- Amount & Preview -->
+        <div class="pt-6 pb-2 px-8 text-right flex flex-col items-end min-h-[5rem] justify-center">
+            <div class="text-xs text-slate-400 font-mono h-4 mb-1" id="calc-preview"></div>
+            <div class="flex items-baseline gap-2 text-slate-900 dark:text-white transition-colors duration-300">
+                <span class="text-2xl font-medium opacity-60">¥</span>
+                <span id="amount-display" class="text-5xl font-mono font-bold tracking-tight">0</span>
+            </div>
+        </div>
+
+        <!-- Date & Note Bar -->
+        <div class="px-6 py-2 flex items-center gap-3">
+            <div
+                class="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-full p-1 pl-3 pr-1 shadow-inner w-full relative transition-colors duration-300">
+                <span
+                    class="material-symbols-outlined text-slate-400 text-[20px] pointer-events-none">calendar_today</span>
+
+                <!-- Interactive Date Display -->
+                <div class="relative min-w-[3.5rem] text-center group">
+                    <span id="date-display"
+                        class="text-xs font-bold text-slate-600 dark:text-slate-200 whitespace-nowrap group-active:scale-95 transition-transform inline-block">今天</span>
+                    <input type="date" id="date-picker" onchange="handleDateChange(this)"
+                        class="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer text-[0px]">
+                </div>
+
+                <!-- Yesterday Button (Toggle) -->
+                <button id="btn-yesterday" onclick="toggleYesterday()"
+                    class="px-2 py-1 bg-white dark:bg-slate-600 rounded-full text-[10px] font-bold text-slate-500 dark:text-slate-300 shadow-sm active:scale-95 transition-all">
+                    昨天
+                </button>
+
+                <div class="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-1"></div>
+                <input type="text" placeholder="添加备注..."
+                    class="bg-transparent border-none focus:ring-0 p-0 text-sm w-full text-slate-700 dark:text-slate-200 placeholder:text-slate-400">
+            </div>
+        </div>
+
+        <!-- Smart Chips (Suggestions) -->
+        <div id="smart-chips"
+            class="px-6 pb-2 flex gap-2 overflow-x-auto hide-scrollbar whitespace-nowrap mask-gradient-right">
+            <!-- Chips injected by JS -->
+        </div>
+
+        <!-- Keypad -->
+        <div class="grid grid-cols-4 gap-2 p-4 pb-8 select-none">
+            <!-- Row 1 -->
+            <button onclick="pressNum('7')"
+                class="keypad-btn h-14 rounded-2xl glass dark:bg-slate-800 dark:border-white/5 text-xl font-medium text-slate-700 dark:text-slate-200">7</button>
+            <button onclick="pressNum('8')"
+                class="keypad-btn h-14 rounded-2xl glass dark:bg-slate-800 dark:border-white/5 text-xl font-medium text-slate-700 dark:text-slate-200">8</button>
+            <button onclick="pressNum('9')"
+                class="keypad-btn h-14 rounded-2xl glass dark:bg-slate-800 dark:border-white/5 text-xl font-medium text-slate-700 dark:text-slate-200">9</button>
+            <button onclick="pressOp('/')"
+                class="keypad-btn h-14 rounded-2xl glass bg-slate-100/50 dark:bg-indigo-500/30 dark:border-indigo-500/30 text-xl font-medium text-primary dark:text-indigo-300">÷</button>
+
+            <!-- Row 2 -->
+            <button onclick="pressNum('4')"
+                class="keypad-btn h-14 rounded-2xl glass dark:bg-slate-800 dark:border-white/5 text-xl font-medium text-slate-700 dark:text-slate-200">4</button>
+            <button onclick="pressNum('5')"
+                class="keypad-btn h-14 rounded-2xl glass dark:bg-slate-800 dark:border-white/5 text-xl font-medium text-slate-700 dark:text-slate-200">5</button>
+            <button onclick="pressNum('6')"
+                class="keypad-btn h-14 rounded-2xl glass dark:bg-slate-800 dark:border-white/5 text-xl font-medium text-slate-700 dark:text-slate-200">6</button>
+            <button onclick="pressOp('*')"
+                class="keypad-btn h-14 rounded-2xl glass bg-slate-100/50 dark:bg-indigo-500/30 dark:border-indigo-500/30 text-xl font-medium text-primary dark:text-indigo-300">×</button>
+
+            <!-- Row 3 -->
+            <button onclick="pressNum('1')"
+                class="keypad-btn h-14 rounded-2xl glass dark:bg-slate-800 dark:border-white/5 text-xl font-medium text-slate-700 dark:text-slate-200">1</button>
+            <button onclick="pressNum('2')"
+                class="keypad-btn h-14 rounded-2xl glass dark:bg-slate-800 dark:border-white/5 text-xl font-medium text-slate-700 dark:text-slate-200">2</button>
+            <button onclick="pressNum('3')"
+                class="keypad-btn h-14 rounded-2xl glass dark:bg-slate-800 dark:border-white/5 text-xl font-medium text-slate-700 dark:text-slate-200">3</button>
+            <button onclick="pressOp('-')"
+                class="keypad-btn h-14 rounded-2xl glass bg-slate-100/50 dark:bg-indigo-500/30 dark:border-indigo-500/30 text-xl font-medium text-primary dark:text-indigo-300">−</button>
+
+            <!-- Row 4 -->
+            <button onclick="pressNum('.')"
+                class="keypad-btn h-14 rounded-2xl glass dark:bg-slate-800 dark:border-white/5 text-xl font-medium text-slate-700 dark:text-slate-200">.</button>
+            <button onclick="pressNum('0')"
+                class="keypad-btn h-14 rounded-2xl glass dark:bg-slate-800 dark:border-white/5 text-xl font-medium text-slate-700 dark:text-slate-200">0</button>
+            <button onclick="pressBackspace()"
+                class="keypad-btn h-14 rounded-2xl glass dark:bg-slate-800 dark:border-white/5 text-xl font-medium text-slate-700 dark:text-slate-200 flex items-center justify-center">
+                <span class="material-symbols-outlined text-[20px]">backspace</span>
+            </button>
+            <button onclick="pressOp('+')"
+                class="keypad-btn h-14 rounded-2xl glass bg-slate-100/50 dark:bg-indigo-500/30 dark:border-indigo-500/30 text-xl font-medium text-primary dark:text-indigo-300">+</button>
+        </div>
+
+        <!-- Actions -->
+        <div class="grid grid-cols-2 gap-4 px-4 pb-6">
+            <button onclick="navigateBack()"
+                class="h-12 rounded-2xl border border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 font-bold active:bg-slate-50 dark:active:bg-slate-800 transition-colors">
+                取消
+            </button>
+            <button id="btn-submit" onclick="submitTransaction()"
+                class="h-12 rounded-2xl bg-expense text-white font-bold shadow-lg shadow-rose-500/30 active:scale-95 transition-all">
+                完成
+            </button>
+        </div>
+
+        <!-- Delete Button (Hidden by default, shown in Edit Mode) -->
+        <div id="delete-container" class="px-4 pb-6 hidden animate-fade-in">
+            <button onclick="deleteTransaction()"
+                class="w-full h-12 rounded-2xl text-rose-500 font-bold active:bg-rose-50 dark:active:bg-rose-900/20 transition-colors flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined">delete</span>
+                删除此记录
+            </button>
+        </div>
+
+        <!-- Custom Confirmation Modal -->
+        <div id="confirm-modal" class="fixed inset-0 z-50 hidden opacity-0 transition-opacity duration-300"
+            aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <!-- Backdrop -->
+            <div class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm transition-opacity" onclick="cancelDelete()">
+            </div>
+
+            <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+                <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                    <!-- Modal Panel -->
+                    <div class="relative transform overflow-hidden rounded-2xl glass-card text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-sm scale-95 opacity-0 duration-300"
+                        id="modal-panel">
+                        <div class="px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                            <div class="sm:flex sm:items-start">
+                                <div
+                                    class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-rose-100 dark:bg-rose-900/30 sm:mx-0 sm:h-10 sm:w-10">
+                                    <span
+                                        class="material-symbols-outlined text-rose-600 dark:text-rose-400">warning</span>
+                                </div>
+                                <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                                    <h3 class="text-base font-bold leading-6 text-slate-900 dark:text-white"
+                                        id="modal-title">删除记录</h3>
+                                    <div class="mt-2">
+                                        <p class="text-sm text-slate-500 dark:text-slate-400">
+                                            确定要永久删除这条记录吗？此操作无法撤销。
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 gap-2">
+                            <button type="button" onclick="confirmDelete()"
+                                class="inline-flex w-full justify-center rounded-xl bg-rose-500 px-3 py-2 text-sm font-bold text-white shadow-sm hover:bg-rose-600 sm:ml-3 sm:w-auto transition-transform active:scale-95">
+                                删除
+                            </button>
+                            <button type="button" onclick="cancelDelete()"
+                                class="mt-3 inline-flex w-full justify-center rounded-xl bg-white dark:bg-slate-800 px-3 py-2 text-sm font-semibold text-slate-900 dark:text-slate-300 shadow-sm ring-1 ring-inset ring-slate-300 dark:ring-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 sm:mt-0 sm:w-auto transition-colors">
+                                取消
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <script>
+        /* --- State --- */
+        let currentType = 'expense';
+        let currentInput = '0';
+        let selectedCategory = null;
+        let currentDate = new Date();
+        let editId = null; // ID if in edit mode
+        let pendingDeleteId = null; // For modal
+
+        const STORAGE_KEY = 'vault_transactions';
+
+        // ... (existing code helpers omitted for brevity if unchanged logic follows) ...
+
+        /* (Replacing deleteTransaction logic below) */
+        function deleteTransaction() {
+            if (!editId) return;
+
+            pendingDeleteId = editId;
+            const modal = document.getElementById('confirm-modal');
+            const panel = document.getElementById('modal-panel');
+
+            modal.classList.remove('hidden');
+            // Trigger reflow
+            void modal.offsetWidth;
+
+            modal.classList.remove('opacity-0');
+
+            panel.classList.remove('scale-95', 'opacity-0');
+            panel.classList.add('scale-100', 'opacity-100');
+        }
+
+        function cancelDelete() {
+            pendingDeleteId = null;
+            const modal = document.getElementById('confirm-modal');
+            const panel = document.getElementById('modal-panel');
+
+            modal.classList.add('opacity-0');
+            panel.classList.remove('scale-100', 'opacity-100');
+            panel.classList.add('scale-95', 'opacity-0');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function confirmDelete() {
+            if (!pendingDeleteId) return;
+
+            const txs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            const newTxs = txs.filter(t => t.id !== pendingDeleteId);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(newTxs));
+
+            navigateBack();
+        }
+
+        /* --- Data --- */
+        const categories = {
+            expense: [
+                { id: 'food', name: '餐饮', icon: 'lunch_dining', color: 'text-orange-500', bg: 'bg-orange-100 dark:bg-orange-500/30' },
+                { id: 'transport', name: '交通', icon: 'directions_car', color: 'text-blue-500', bg: 'bg-blue-100 dark:bg-blue-500/30' },
+                { id: 'shopping', name: '购物', icon: 'shopping_bag', color: 'text-pink-500', bg: 'bg-pink-100 dark:bg-pink-500/30' },
+                { id: 'housing', name: '居住', icon: 'home', color: 'text-purple-500', bg: 'bg-purple-100 dark:bg-purple-500/30' },
+                { id: 'clothing', name: '服饰', icon: 'checkroom', color: 'text-cyan-500', bg: 'bg-cyan-100 dark:bg-cyan-500/30' },
+                { id: 'telecom', name: '通讯', icon: 'smartphone', color: 'text-indigo-500', bg: 'bg-indigo-100 dark:bg-indigo-500/30' },
+                { id: 'dining', name: '聚餐', icon: 'restaurant', color: 'text-amber-500', bg: 'bg-amber-100 dark:bg-amber-500/30' },
+                { id: 'entertainment', name: '娱乐', icon: 'sports_esports', color: 'text-red-500', bg: 'bg-red-100 dark:bg-red-500/30' },
+                { id: 'travel', name: '旅行', icon: 'flight', color: 'text-teal-500', bg: 'bg-teal-100 dark:bg-teal-500/30' },
+                { id: 'medical', name: '医疗', icon: 'medical_services', color: 'text-rose-500', bg: 'bg-rose-100 dark:bg-rose-500/30' },
+            ],
+            income: [
+                { id: 'salary', name: '工资', icon: 'payments', color: 'text-emerald-500', bg: 'bg-emerald-100 dark:bg-emerald-500/30' },
+                { id: 'bonus', name: '奖金', icon: 'celebration', color: 'text-amber-500', bg: 'bg-amber-100 dark:bg-amber-500/30' },
+                { id: 'investment', name: '理财', icon: 'trending_up', color: 'text-blue-500', bg: 'bg-blue-100 dark:bg-blue-500/30' },
+                { id: 'parttime', name: '兼职', icon: 'work', color: 'text-purple-500', bg: 'bg-purple-100 dark:bg-purple-500/30' },
+                { id: 'refund', name: '退款', icon: 'currency_exchange', color: 'text-teal-500', bg: 'bg-teal-100 dark:bg-teal-500/30' },
+            ]
+        };
+
+        /* --- Initialization --- */
+        window.onload = () => {
+            checkEditMode();
+
+            // If not editing or type not set by edit, init defaults
+            if (!editId) {
+                renderCategories('expense');
+                selectCategory(categories.expense[0].id);
+                updateDateDisplay();
+            }
+        };
+
+        function checkEditMode() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+            if (id) {
+                editId = id;
+                loadTransaction(id);
+                document.getElementById('delete-container').classList.remove('hidden');
+            }
+        }
+
+        function loadTransaction(id) {
+            const txs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            const target = txs.find(t => t.id === id);
+            if (target) {
+                // Set Type
+                toggleType(target.type);
+
+                // Set Amount
+                currentInput = target.amount.toString();
+                // Just in case it was a calculation result, keep it simple string
+                updateDisplay();
+
+                // Set Category (after type toggle which renders cats)
+                selectCategory(target.category);
+
+                // Set Date
+                currentDate = new Date(target.date);
+                updateDateDisplay();
+
+                // Set Note (assuming note input exists)
+                const noteInput = document.querySelector('input[type="text"]');
+                if (noteInput) noteInput.value = target.note || '';
+            }
+        }
+
+        /* --- Logic --- */
+        function toggleType(type) {
+            if (currentType === type && !editId) return; // Allow re-run if edit loading
+            currentType = type;
+
+            const body = document.body;
+            const indicator = document.getElementById('type-indicator');
+            const btnExp = document.getElementById('btn-expense');
+            const btnInc = document.getElementById('btn-income');
+            const btnSubmit = document.getElementById('btn-submit');
+
+            if (type === 'expense') {
+                body.classList.remove('mode-income');
+                body.classList.add('mode-expense');
+
+                indicator.style.left = '4px';
+
+                btnExp.className = "relative z-10 flex-1 py-2 text-sm font-bold text-rose-500 transition-colors duration-300 text-center";
+                btnInc.className = "relative z-10 flex-1 py-2 text-sm font-medium text-slate-500 dark:text-slate-400 transition-colors duration-300 text-center";
+
+                btnSubmit.classList.remove('bg-income', 'shadow-green-500/30');
+                btnSubmit.classList.add('bg-expense', 'shadow-rose-500/30');
+
+                renderCategories('expense');
+                // Only reset category if not loading edit
+                if (!editId || (editId && currentType !== type)) {
+                    selectCategory(categories.expense[0].id);
+                }
+            } else {
+                body.classList.remove('mode-expense');
+                body.classList.add('mode-income');
+
+                indicator.style.left = 'calc(50% + 0px)';
+
+                btnInc.className = "relative z-10 flex-1 py-2 text-sm font-bold text-emerald-500 transition-colors duration-300 text-center";
+                btnExp.className = "relative z-10 flex-1 py-2 text-sm font-medium text-slate-500 dark:text-slate-400 transition-colors duration-300 text-center";
+
+                btnSubmit.classList.remove('bg-expense', 'shadow-rose-500/30');
+                btnSubmit.classList.add('bg-income', 'shadow-green-500/30');
+
+                renderCategories('income');
+                if (!editId || (editId && currentType !== type)) {
+                    selectCategory(categories.income[0].id);
+                }
+            }
+        }
+
+        function renderCategories(type) {
+            const grid = document.getElementById('category-grid');
+            grid.innerHTML = '';
+
+            categories[type].forEach(cat => {
+                const btn = document.createElement('button');
+                btn.onclick = () => selectCategory(cat.id);
+                btn.className = `category-btn flex flex-col items-center gap-2 group w-full`;
+                btn.dataset.id = cat.id;
+
+                const iconContainer = document.createElement('div');
+                iconContainer.className = `icon-container w-12 h-12 rounded-full flex items-center justify-center text-xl transition-all duration-300 ${cat.bg} ${cat.color} group-active:scale-95`;
+
+                const iconSpan = document.createElement('span');
+                iconSpan.className = 'material-symbols-outlined';
+                iconSpan.textContent = cat.icon;
+
+                iconContainer.appendChild(iconSpan);
+
+                const label = document.createElement('span');
+                label.className = 'label text-[10px] font-medium text-slate-500 dark:text-slate-400 truncate w-full text-center transition-colors';
+                label.textContent = cat.name;
+
+                btn.appendChild(iconContainer);
+                btn.appendChild(label);
+                grid.appendChild(btn);
+            });
+        }
+
+        function selectCategory(id) {
+            selectedCategory = id;
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                if (btn.dataset.id === id) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            renderSmartChips();
+        }
+
+        /* --- Date Logic --- */
+        function updateDateDisplay() {
+            const display = document.getElementById('date-display');
+            const btnYesterday = document.getElementById('btn-yesterday');
+            const today = new Date();
+            const isToday = currentDate.toDateString() === today.toDateString();
+
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            const isYesterday = currentDate.toDateString() === yesterday.toDateString();
+
+            // Update Text
+            if (isToday) {
+                display.textContent = '今天';
+                display.className = "text-xs font-bold text-slate-900 dark:text-white whitespace-nowrap group-active:scale-95 transition-transform inline-block";
+            } else if (isYesterday) {
+                display.textContent = '昨天';
+                display.className = "text-xs font-bold text-slate-900 dark:text-white whitespace-nowrap group-active:scale-95 transition-transform inline-block";
+            } else {
+                // Format: M-D
+                display.textContent = `${currentDate.getMonth() + 1}月${currentDate.getDate()}日`;
+                display.className = "text-xs font-bold text-primary whitespace-nowrap group-active:scale-95 transition-transform inline-block";
+            }
+
+            // Update Yesterday Button State
+            if (isYesterday) {
+                btnYesterday.textContent = '今天';
+                btnYesterday.classList.add('text-primary', 'bg-blue-50', 'dark:bg-blue-900/30');
+                btnYesterday.classList.remove('text-slate-500', 'bg-white', 'dark:bg-slate-700');
+            } else {
+                btnYesterday.textContent = '昨天';
+                btnYesterday.classList.remove('text-primary', 'bg-blue-50', 'dark:bg-blue-900/30');
+                btnYesterday.classList.add('text-slate-500', 'bg-white', 'dark:bg-slate-700');
+            }
+
+            // Sync Native Date Input (for picker)
+            const yyyy = currentDate.getFullYear();
+            const mm = String(currentDate.getMonth() + 1).padStart(2, '0');
+            const dd = String(currentDate.getDate()).padStart(2, '0');
+            const picker = document.getElementById('date-picker');
+            picker.value = `${yyyy}-${mm}-${dd}`;
+        }
+
+        function handleDateChange(input) {
+            const val = input.value;
+            if (!val) return;
+            const parts = val.split('-');
+            currentDate = new Date(parts[0], parts[1] - 1, parts[2]);
+            updateDateDisplay();
+        }
+
+        function toggleYesterday() {
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+
+            if (currentDate.toDateString() === yesterday.toDateString()) {
+                currentDate = today;
+            } else {
+                currentDate = yesterday;
+            }
+            updateDateDisplay();
+        }
+
+
+        /* --- Keypad Logic --- */
+        function pressNum(num) {
+            if (currentInput === '0' && num !== '.') {
+                currentInput = num;
+            } else {
+                if (num === '.' && currentInput.includes('.')) {
+                    if (currentInput.slice(-1) === '.') return;
+                    const lastChar = currentInput.slice(-1);
+                    if (['+', '-', '*', '/'].includes(lastChar)) {
+                        currentInput += '0.';
+                        updateDisplay();
+                        return;
+                    }
+                }
+                currentInput += num;
+            }
+            updateDisplay();
+        }
+
+        function pressOp(op) {
+            const lastChar = currentInput.slice(-1);
+            if (['+', '-', '*', '/'].includes(lastChar)) {
+                currentInput = currentInput.slice(0, -1) + op;
+            } else {
+                currentInput += op;
+            }
+            updateDisplay();
+        }
+
+        function pressBackspace() {
+            if (currentInput.length === 1) {
+                currentInput = '0';
+            } else {
+                currentInput = currentInput.slice(0, -1);
+            }
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            const display = document.getElementById('amount-display');
+            const preview = document.getElementById('calc-preview');
+            const btnSubmit = document.getElementById('btn-submit');
+
+            // Format Display
+            let formatted = currentInput;
+            try {
+                // If it's a simple number, format it
+                if (!Number.isNaN(parseFloat(currentInput)) && !/[+\-*/]$/.test(currentInput)) {
+                    // Check if it's an expression or just a number
+                    if (!/[+\-*/]/.test(currentInput)) {
+                        const parts = currentInput.split('.');
+                        parts[0] = parseInt(parts[0]).toLocaleString();
+                        formatted = parts.join('.');
+                    }
+                }
+            } catch (e) { }
+
+            // Animate only if changed
+            if (display.textContent !== formatted) {
+                display.textContent = formatted;
+                // Trigger Pop Animation
+                display.classList.remove('animate-pop');
+                void display.offsetWidth; // trigger reflow
+                display.classList.add('animate-pop');
+            }
+
+            // Calc Preview
+            let validAmount = false;
+            try {
+                if (/[+\-*/]/.test(currentInput)) {
+                    let evalStr = currentInput;
+                    const lastChar = evalStr.slice(-1);
+                    if (['+', '-', '*', '/'].includes(lastChar)) {
+                        evalStr = evalStr.slice(0, -1);
+                    }
+                    const result = eval(evalStr);
+                    if (!isNaN(result) && Math.abs(result) > 0 && result.toString() !== evalStr) {
+                        preview.textContent = '= ' + result.toLocaleString(undefined, { maximumFractionDigits: 2 });
+                        validAmount = true;
+                    } else {
+                        preview.textContent = '';
+                        // Special case: if expression evaluates to > 0
+                        if (!isNaN(result) && Math.abs(result) > 0) validAmount = true;
+                    }
+                } else {
+                    preview.textContent = '';
+                    if (parseFloat(currentInput) > 0) validAmount = true;
+                }
+            } catch (e) {
+                preview.textContent = '';
+            }
+
+            // Button State
+            if (validAmount) {
+                btnSubmit.disabled = false;
+                btnSubmit.classList.remove('bg-slate-300', 'dark:bg-slate-700', 'text-slate-500', 'shadow-none', 'cursor-not-allowed');
+                btnSubmit.classList.add('text-white', 'shadow-lg', 'active:scale-95');
+
+                if (currentType === 'expense') {
+                    btnSubmit.classList.add('bg-expense', 'shadow-rose-500/30');
+                    btnSubmit.classList.remove('bg-income', 'shadow-green-500/30');
+                } else {
+                    btnSubmit.classList.add('bg-income', 'shadow-green-500/30');
+                    btnSubmit.classList.remove('bg-expense', 'shadow-rose-500/30');
+                }
+            } else {
+                btnSubmit.disabled = true;
+                btnSubmit.classList.add('bg-slate-300', 'dark:bg-slate-700', 'text-slate-500', 'shadow-none', 'cursor-not-allowed');
+                btnSubmit.classList.remove('bg-expense', 'bg-income', 'text-white', 'shadow-lg', 'shadow-rose-500/30', 'shadow-green-500/30', 'active:scale-95');
+            }
+        }
+
+        /* --- Submit & Storage --- */
+        function submitTransaction() {
+            let finalAmount = currentInput;
+            try {
+                finalAmount = eval(currentInput);
+            } catch (e) { }
+
+            if (parseFloat(finalAmount) === 0) {
+                alert("请输入有效金额");
+                return;
+            }
+
+            const note = document.querySelector('input[type="text"]').value;
+            const txs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+
+            if (editId) {
+                // Update
+                const index = txs.findIndex(t => t.id === editId);
+                if (index !== -1) {
+                    txs[index] = {
+                        ...txs[index],
+                        type: currentType,
+                        amount: finalAmount,
+                        category: selectedCategory,
+                        date: currentDate.toISOString(),
+                        note: note,
+                        timestamp: txs[index].timestamp // keep original creation time
+                    };
+                }
+            } else {
+                // Create
+                const newTx = {
+                    id: Date.now().toString(),
+                    type: currentType,
+                    amount: finalAmount,
+                    category: selectedCategory,
+                    date: currentDate.toISOString(),
+                    note: note,
+                    timestamp: Date.now()
+                };
+                txs.push(newTx);
+            }
+
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(txs));
+            navigateBack();
+        }
+
+
+
+        function navigateBack() {
+            if (document.startViewTransition) {
+                document.startViewTransition(() => {
+                    window.location.href = 'Overview.html';
+                });
+            } else {
+                window.location.href = 'Overview.html';
+            }
+        }
+
+        // --- Theme ---
+        function initTheme() {
+            const stored = localStorage.getItem('theme');
+            if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+
+        // --- Smart Context ---
+        const smartContext = {
+            time: {
+                morning: ['早餐', '早安咖啡'],
+                noon: ['午餐', '奶茶'],
+                afternoon: ['下午茶', '零食'],
+                evening: ['晚餐', '夜宵', '买菜'],
+                late: ['夜宵', '打车']
+            },
+            category: {
+                food: ['🍔', '☕', '🥤', '🍚', '🍜', '火锅'],
+                transport: ['🚇', '🚕', '🚌', '⛽', '停车'],
+                shopping: ['🛒', '衣服', '日用品', '数码'],
+                entertainment: ['🎬', '🎮', '🎤', '会员'],
+                housing: ['🏠', '电费', '水费', '房租'],
+                medical: ['💊', '挂号', '体检'],
+                salary: ['发工资啦', '兼职'],
+                bonus: ['年终奖', '红包']
+            }
+        };
+
+        function renderSmartChips() {
+            const container = document.getElementById('smart-chips');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const hour = new Date().getHours();
+            let timeKeys = [];
+            if (hour >= 5 && hour < 10) timeKeys = smartContext.time.morning;
+            else if (hour >= 11 && hour < 14) timeKeys = smartContext.time.noon;
+            else if (hour >= 14 && hour < 17) timeKeys = smartContext.time.afternoon;
+            else if (hour >= 17 && hour < 21) timeKeys = smartContext.time.evening;
+            else if (hour >= 21 || hour < 5) timeKeys = smartContext.time.late;
+
+            const catKeys = smartContext.category[selectedCategory] || [];
+
+            // Combine unique suggestions
+            const suggestions = Array.from(new Set([...timeKeys, ...catKeys]));
+
+            suggestions.forEach(text => {
+                const chip = document.createElement('button');
+                chip.className = "px-3 py-1 bg-slate-100 dark:bg-slate-700/50 text-xs font-medium text-slate-600 dark:text-slate-300 rounded-full active:scale-95 transition-transform border border-transparent dark:border-white/5";
+                chip.textContent = text;
+                chip.onclick = () => {
+                    const input = document.querySelector('input[type=\"text\"]');
+                    const currentVal = input.value;
+                    if (currentVal) {
+                        input.value = currentVal + ' ' + text;
+                    } else {
+                        input.value = text;
+                    }
+                };
+                container.appendChild(chip);
+            });
+        }
+
+        // --- Swipe to Close Gesture ---
+        let touchStartY = 0;
+        let touchCurrentY = 0;
+        const SWIPE_THRESHOLD = 150;
+        const mainContent = document.querySelector('main');
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        document.addEventListener('touchmove', (e) => {
+            touchCurrentY = e.touches[0].clientY;
+            const deltaY = touchCurrentY - touchStartY;
+
+            // Only allow swipe down if we are at the top of the scrollable content
+            if (mainContent.scrollTop === 0 && deltaY > 0) {
+                // Prevent default pull-to-refresh if possible (browser dependent, but passive:false needed)
+                // For now just visual feedback
+                document.body.style.transform = `translateY(${deltaY}px)`;
+                document.body.style.opacity = `${1 - (deltaY / 600)}`;
+                document.body.style.transition = 'none';
+            }
+        }, { passive: true });
+
+        document.addEventListener('touchend', (e) => {
+            const deltaY = touchCurrentY - touchStartY;
+            const isAtTop = mainContent.scrollTop === 0;
+
+            if (isAtTop && deltaY > SWIPE_THRESHOLD) {
+                // Trigger Close
+                document.body.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+                document.body.style.transform = `translateY(100vh)`;
+                document.body.style.opacity = '0';
+                setTimeout(navigateBack, 300);
+            } else {
+                // Reset
+                document.body.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+                document.body.style.transform = '';
+                document.body.style.opacity = '';
+            }
+            touchStartY = 0;
+            touchCurrentY = 0;
+        });
+
+        // Init immediately
+        initTheme();
+
+    </script>
+</body>
+
+</html>
