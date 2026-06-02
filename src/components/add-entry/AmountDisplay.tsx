@@ -4,6 +4,7 @@ import Animated, { useSharedValue, useAnimatedStyle, withSequence, withTiming } 
 import { useTheme } from '@/src/hooks/useTheme';
 import { COLORS } from '@/src/constants/Colors';
 import { TransactionType } from '@/src/types/transaction';
+import { useSettingsStore } from '@/src/stores/useSettingsStore';
 
 interface AmountDisplayProps {
   expression: string;
@@ -13,6 +14,7 @@ interface AmountDisplayProps {
 
 export function AmountDisplay({ expression, displayAmount, type }: AmountDisplayProps) {
   const { colors } = useTheme();
+  const currencySymbol = useSettingsStore(state => state.getCurrencySymbol());
   
   // Shared value for the micro-interaction pop effect
   const scale = useSharedValue(1);
@@ -46,12 +48,12 @@ export function AmountDisplay({ expression, displayAmount, type }: AmountDisplay
       {/* Bottom row: Large formatted input value */}
       <Animated.View style={[styles.amountRow, animatedStyle]}>
         <Text style={[styles.currencySymbol, { color: colors.text, opacity: 0.6 }]}>
-          ¥
+          {currencySymbol}
         </Text>
         <Text 
           numberOfLines={1} 
           adjustsFontSizeToFit 
-          minimumScaleFactor={0.5} 
+          {...{ minimumScaleFactor: 0.5 } as any} 
           style={[styles.amountText, { color: colors.text }]}
         >
           {displayAmount}

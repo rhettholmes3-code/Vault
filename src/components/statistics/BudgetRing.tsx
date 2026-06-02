@@ -4,26 +4,38 @@ import Svg, { Circle } from 'react-native-svg';
 import { useTheme } from '@/src/hooks/useTheme';
 
 interface BudgetRingProps {
-  progress: number; // 0 to 100
+  progress: number; // Spent percentage (0 to 100+)
   size?: number;
   strokeWidth?: number;
 }
 
 export function BudgetRing({ progress, size = 64, strokeWidth = 6 }: BudgetRingProps) {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
+  
+  // Calculate remaining percentage (100 - spent)
+  const remainingPercent = Math.max(0, 100 - progress);
   
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
-  const strokeDashoffset = circumference - (Math.min(progress, 100) / 100) * circumference;
+  // Stroke is based on remaining percentage
+  const strokeDashoffset = circumference - (remainingPercent / 100) * circumference;
   
-  const isOverBudget = progress > 100;
-  const progressColor = isOverBudget ? colors.danger : colors.primary;
+  // Health color mapping:
+  // > 50% remaining: emerald-500
+  // 20% - 50% remaining: amber-500
+  // < 20% remaining: rose-500
+  let healthColor = '#10b981'; // Default green
+  if (remainingPercent < 20) {
+    healthColor = '#f43f5e'; // Red
+  } else if (remainingPercent < 50) {
+    healthColor = '#f59e0b'; // Yellow
+  }
 
   return (
     <View style={[{ width: size, height: size }, styles.container]}>
       <Svg width={size} height={size}>
         <Circle
-          stroke={colors.border}
+          stroke={isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)'}
           fill="none"
           cx={size / 2}
           cy={size / 2}
@@ -31,7 +43,7 @@ export function BudgetRing({ progress, size = 64, strokeWidth = 6 }: BudgetRingP
           strokeWidth={strokeWidth}
         />
         <Circle
-          stroke={progressColor}
+          stroke={healthColor}
           fill="none"
           cx={size / 2}
           cy={size / 2}
@@ -46,8 +58,8 @@ export function BudgetRing({ progress, size = 64, strokeWidth = 6 }: BudgetRingP
         />
       </Svg>
       <View style={[StyleSheet.absoluteFill, styles.center]}>
-        <Text style={[styles.text, { color: progressColor }]}>
-          {Math.round(progress)}%
+        <Text style={[styles.text, { color: healthColor }]}>
+          {Math.round(remainingPercent)}%
         </Text>
       </View>
     </View>
@@ -64,7 +76,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   text: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
     fontFamily: 'JetBrainsMono',
   }

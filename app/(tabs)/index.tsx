@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { StyleSheet, View, Text, SafeAreaView, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@/src/hooks/useTheme';
 import { SegmentedControl } from '@/src/components/common/SegmentedControl';
 import { AssetBentoGrid } from '@/src/components/overview/AssetBentoGrid';
@@ -9,9 +10,8 @@ import { getMonthRange, toDate } from '@/src/utils/dateUtils';
 import { StatisticsView } from '@/src/components/statistics/StatisticsView';
 import { useStatsStore } from '@/src/stores/useStatsStore';
 import { Skeleton } from '@/src/components/common/Skeleton';
+import { t } from '@/src/constants/i18n';
 
-const MAIN_TABS = ['账本', '月度', '年度'];
-const FILTER_OPTIONS = ['全部', '支出', '收入'];
 const FILTER_VALUES = ['all', 'expense', 'income'] as const;
 
 export default function OverviewScreen() {
@@ -58,11 +58,14 @@ export default function OverviewScreen() {
     await fetchTransactions();
   };
 
+  const mainTabs = [t('tabs.ledger'), t('stats.monthly'), t('stats.annual')];
+  const filterOptions = [t('stats.all_categories'), t('overview.expense'), t('overview.income')];
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
         <SegmentedControl
-          values={MAIN_TABS}
+          values={mainTabs}
           selectedIndex={mainTabIndex}
           onChange={setMainTabIndex}
           style={styles.mainSegmented}
@@ -71,12 +74,12 @@ export default function OverviewScreen() {
 
       {mainTabIndex === 0 ? (
         <View style={styles.content}>
-          <AssetBentoGrid income={income} expense={expense} />
+          <AssetBentoGrid income={income} expense={expense} transactions={transactions} />
           
           <View style={styles.listHeader}>
-            <Text style={[styles.listTitle, { color: colors.text }]}>最近记录</Text>
+            <Text style={[styles.listTitle, { color: colors.text }]}>{t('overview.recent_records')}</Text>
             <SegmentedControl
-              values={FILTER_OPTIONS}
+              values={filterOptions}
               selectedIndex={filterIndex}
               onChange={setFilterIndex}
               style={styles.filterSegmented}

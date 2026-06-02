@@ -8,7 +8,7 @@ const DB_NAME = 'vault.db';
  */
 export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
   if (!dbInstance) {
-    dbInstance = await SQLite.openDatabaseAsync(DB_NAME);
+    dbInstance = await SQLite.openDatabaseAsync(DB_NAME, { useNewConnection: true });
   }
   return dbInstance;
 }

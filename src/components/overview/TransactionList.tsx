@@ -7,6 +7,7 @@ import { isToday, isYesterday, formatDate } from '@/src/utils/dateUtils';
 import { MaterialIcons } from '@expo/vector-icons';
 import { COLORS } from '@/src/constants/Colors';
 import { formatAmount } from '@/src/utils/numberUtils';
+import { t } from '@/src/constants/i18n';
 
 interface TransactionListProps {
   transactions: Transaction[];
@@ -35,13 +36,12 @@ export function TransactionList({ transactions, onDelete, onRefresh, filterType 
   const sections = useMemo(() => {
     let filtered = transactions;
     if (filterType !== 'all') {
-      filtered = transactions.filter(t => t.type === filterType);
+      filtered = transactions.filter(tData => tData.type === filterType);
     }
 
     const groups: Record<string, Transaction[]> = {};
     
     // Group by date (descending, assuming they are already sorted or sort them here)
-    // To be safe, sort by date and created_at descending
     const sorted = [...filtered].sort((a, b) => {
       if (a.date !== b.date) {
         return b.date.localeCompare(a.date);
@@ -67,8 +67,8 @@ export function TransactionList({ transactions, onDelete, onRefresh, filterType 
 
       // Format title
       let title = '';
-      if (isToday(date)) title = '今天';
-      else if (isYesterday(date)) title = '昨天';
+      if (isToday(date)) title = t('overview.today');
+      else if (isYesterday(date)) title = t('overview.yesterday');
       else title = formatDate(date);
 
       return {
@@ -109,8 +109,8 @@ export function TransactionList({ transactions, onDelete, onRefresh, filterType 
     return (
       <View style={styles.emptyContainer}>
         <MaterialIcons name="receipt-long" size={64} color={colors.border} />
-        <Text style={[styles.emptyText, { color: colors.textSecondary }]}>暂无记录</Text>
-        <Text style={[styles.emptySubText, { color: colors.border }]}>点击下方的 + 记一笔吧</Text>
+        <Text style={[styles.emptyText, { color: colors.textSecondary }]}>{t('overview.no_transactions')}</Text>
+        <Text style={[styles.emptySubText, { color: colors.border }]}>{t('overview.click_plus_to_add')}</Text>
       </View>
     );
   }
@@ -127,7 +127,7 @@ export function TransactionList({ transactions, onDelete, onRefresh, filterType 
         <RefreshControl 
           refreshing={refreshing} 
           onRefresh={handleRefresh} 
-          tintColor={colors.primary}
+          tintColor={colors.tint}
           colors={[COLORS.primary]} // Android
         />
       }

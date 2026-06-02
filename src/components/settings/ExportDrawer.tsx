@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { BottomDrawer } from '../common/BottomDrawer';
 import { useTheme } from '@/src/hooks/useTheme';
@@ -7,30 +7,31 @@ import { ExportService } from '@/src/services/ExportService';
 import { getDatabase } from '@/src/database/connection';
 import { QUERIES } from '@/src/database/queries';
 import { Transaction } from '@/src/types/transaction';
+import { t } from '@/src/constants/i18n';
 
 interface ExportDrawerProps {
   visible: boolean;
   onClose: () => void;
 }
 
-const EXPORT_RANGES = [
-  { id: 'this_month', label: '本月' },
-  { id: 'last_month', label: '上月' },
-  { id: 'this_year', label: '本年' },
-  { id: 'last_year', label: '去年' },
-  { id: 'all', label: '全部' },
-] as const;
-
 export function ExportDrawer({ visible, onClose }: ExportDrawerProps) {
   const { colors, isDark } = useTheme();
   const [selectedRange, setSelectedRange] = useState<string>('this_month');
   const [isExporting, setIsExporting] = useState(false);
 
+  const exportRanges = [
+    { id: 'this_month', label: t('settings.export_this_month') },
+    { id: 'last_month', label: t('settings.export_last_month') },
+    { id: 'this_year', label: t('settings.export_this_year') },
+    { id: 'last_year', label: t('settings.export_last_year') },
+    { id: 'all', label: t('settings.export_all') },
+  ];
+
   const handleExport = async () => {
     setIsExporting(true);
     try {
       const db = await getDatabase();
-      let query = QUERIES.GET_TRANSACTIONS;
+      let query = QUERIES.GET_ALL_TRANSACTIONS;
       let params: string[] = [];
 
       const now = new Date();
@@ -69,7 +70,7 @@ export function ExportDrawer({ visible, onClose }: ExportDrawerProps) {
       const transactions = await db.getAllAsync<Transaction>(query, params);
       
       if (transactions.length === 0) {
-        alert('该时间范围内没有交易记录');
+        Alert.alert(t('settings.export_fail'), t('overview.no_transactions'));
         setIsExporting(false);
         return;
       }
@@ -78,19 +79,19 @@ export function ExportDrawer({ visible, onClose }: ExportDrawerProps) {
       onClose();
     } catch (e) {
       console.error(e);
-      alert('导出失败');
+      Alert.alert('Error', t('settings.export_fail'));
     } finally {
       setIsExporting(false);
     }
   };
 
   return (
-    <BottomDrawer visible={visible} onClose={onClose} title="导出账单明细" height={420}>
+    <BottomDrawer visible={visible} onClose={onClose} title={t('settings.export_title')} height={420}>
       <View style={styles.container}>
-        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>选择导出时间范围</Text>
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>{t('settings.export_subtitle')}</Text>
         
         <View style={styles.optionsContainer}>
-          {EXPORT_RANGES.map((range) => {
+          {exportRanges.map((range) => {
             const isSelected = selectedRange === range.id;
             return (
               <TouchableOpacity
@@ -132,7 +133,7 @@ export function ExportDrawer({ visible, onClose }: ExportDrawerProps) {
           ) : (
             <>
               <MaterialIcons name="ios-share" size={20} color="#fff" style={{ marginRight: 8 }} />
-              <Text style={styles.exportButtonText}>导出 CSV 文件</Text>
+              <Text style={styles.exportButtonText}>{t('settings.export_csv_btn')}</Text>
             </>
           )}
         </TouchableOpacity>

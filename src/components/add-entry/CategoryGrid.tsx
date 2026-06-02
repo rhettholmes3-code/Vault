@@ -5,6 +5,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { CATEGORIES, CategoryInfo } from '@/src/constants/categories';
 import { TransactionType } from '@/src/types/transaction';
 import { useTheme } from '@/src/hooks/useTheme';
+import { t } from '@/src/constants/i18n';
 
 interface CategoryGridProps {
   type: TransactionType;
@@ -115,7 +116,7 @@ function CategoryItem({ category, isSelected, onSelect }: CategoryItemProps) {
             }
           ]}
         >
-          {category.name}
+          {t('category.' + category.id)}
         </Text>
       </Animated.View>
     </Pressable>
@@ -145,7 +146,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 6,
-    transition: 'background-color 0.2s',
   },
   label: {
     fontSize: 11,

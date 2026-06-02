@@ -7,6 +7,7 @@ import { getDatabase } from '@/src/database/connection';
 import { Transaction } from '@/src/types/transaction';
 import { getMonthRange, getYearRange } from '@/src/utils/dateUtils';
 import { TransactionItem } from '../overview/TransactionItem';
+import { t } from '@/src/constants/i18n';
 
 interface CategoryRankingProps {
   data: StructureData | null;
@@ -35,7 +36,10 @@ export function CategoryRanking({ data, periodType, currentDate, type }: Categor
       WHERE type = ? AND category = ? AND date >= ? AND date <= ? 
       ORDER BY date DESC
     `;
-    const rows = await db.getAllAsync<Transaction>(query, [type, categoryId, start, end]);
+    const rows = await db.getAllAsync<Transaction>(
+      query, 
+      [type || 'expense', categoryId || '', start || '', end || '']
+    );
     
     setTransactions(rows);
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -49,8 +53,6 @@ export function CategoryRanking({ data, periodType, currentDate, type }: Categor
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, { color: colors.text }]}>分类排行</Text>
-      
       <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         {data.points.map((point, index) => {
           const isExpanded = expandedCategory === point.category;
@@ -70,7 +72,7 @@ export function CategoryRanking({ data, periodType, currentDate, type }: Categor
                 
                 <View style={styles.contentContainer}>
                   <View style={styles.headerRow}>
-                    <Text style={[styles.name, { color: colors.text }]}>{point.name}</Text>
+                    <Text style={[styles.name, { color: colors.text }]}>{t('category.' + point.category)}</Text>
                     <Text style={[styles.amount, { color: colors.text }]}>¥{point.amount.toFixed(2)}</Text>
                   </View>
                   
@@ -85,10 +87,10 @@ export function CategoryRanking({ data, periodType, currentDate, type }: Categor
               
               {isExpanded && (
                 <View style={styles.transactionsContainer}>
-                  {transactions.map(t => (
+                  {transactions.map(tData => (
                     <TransactionItem 
-                      key={t.id} 
-                      transaction={t} 
+                      key={tData.id} 
+                      transaction={tData} 
                       onDelete={noop} 
                     />
                   ))}
@@ -108,12 +110,8 @@ export function CategoryRanking({ data, periodType, currentDate, type }: Categor
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 16,
-    marginTop: 16,
-  },
-  title: {
-    fontSize: 16,
-    fontFamily: 'Manrope-SemiBold',
-    marginBottom: 12,
+    marginTop: 4,
+    marginBottom: 20,
   },
   card: {
     borderRadius: 16,

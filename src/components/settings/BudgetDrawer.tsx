@@ -6,6 +6,7 @@ import { useTheme } from '@/src/hooks/useTheme';
 import { useSettingsStore } from '@/src/stores/useSettingsStore';
 import { evaluateExpression } from '@/src/utils/numberUtils';
 import { COLORS } from '@/src/constants/Colors';
+import { t } from '@/src/constants/i18n';
 
 interface BudgetDrawerProps {
   visible: boolean;
@@ -14,7 +15,8 @@ interface BudgetDrawerProps {
 
 export function BudgetDrawer({ visible, onClose }: BudgetDrawerProps) {
   const { colors, isDark } = useTheme();
-  const { monthlyBudget, setMonthlyBudget } = useSettingsStore();
+  const { monthlyBudget, setMonthlyBudget, getCurrencySymbol } = useSettingsStore();
+  const currencySymbol = getCurrencySymbol();
   const [expression, setExpression] = useState('');
 
   useEffect(() => {
@@ -52,10 +54,10 @@ export function BudgetDrawer({ visible, onClose }: BudgetDrawerProps) {
   const showPreview = ['+', '-', '*', '/'].some(op => expression.includes(op));
 
   return (
-    <BottomDrawer visible={visible} onClose={onClose} title="每月预算设置" height={520}>
+    <BottomDrawer visible={visible} onClose={onClose} title={t('settings.budget_title')} height={520}>
       <View style={styles.container}>
         <View style={styles.displayContainer}>
-          <Text style={[styles.currency, { color: colors.text }]}>¥</Text>
+          <Text style={[styles.currency, { color: colors.text }]}>{currencySymbol}</Text>
           <Text style={[styles.amount, { color: colors.text }]} numberOfLines={1} adjustsFontSizeToFit>
             {expression || '0'}
           </Text>
@@ -80,7 +82,7 @@ export function BudgetDrawer({ visible, onClose }: BudgetDrawerProps) {
           onPress={handleSave}
           activeOpacity={0.8}
         >
-          <Text style={styles.saveButtonText}>保存预算</Text>
+          <Text style={styles.saveButtonText}>{t('settings.save_budget')}</Text>
         </TouchableOpacity>
       </View>
     </BottomDrawer>

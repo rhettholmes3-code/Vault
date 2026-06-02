@@ -5,10 +5,13 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { GlassCard } from '@/src/components/common/GlassCard';
 import { useRouter } from 'expo-router';
 import { COLORS } from '@/src/constants/Colors';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { t } from '@/src/constants/i18n';
 
 export default function TabsLayout() {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   return (
     <Tabs
@@ -19,21 +22,22 @@ export default function TabsLayout() {
         tabBarShowLabel: false,
         tabBarStyle: {
           position: 'absolute',
-          bottom: 24,
-          left: 20,
-          right: 20,
-          height: 68,
-          borderRadius: 24,
-          borderTopWidth: 0,
-          backgroundColor: 'transparent',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: 64 + insets.bottom,
+          borderTopWidth: 1,
+          borderTopColor: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)',
+          backgroundColor: isDark ? 'rgba(15, 23, 42, 0.85)' : 'rgba(255, 255, 255, 0.85)',
           elevation: 0,
           shadowOpacity: 0,
+          paddingBottom: insets.bottom,
         },
         tabBarBackground: () => (
           <GlassCard
             intensity={45}
-            borderRadius={24}
-            borderWidth={1}
+            borderRadius={0}
+            borderWidth={0}
             style={StyleSheet.absoluteFill}
           />
         ),
@@ -42,7 +46,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: '概览',
+          title: t('tabs.ledger'),
           tabBarIcon: ({ color, focused }) => (
             <View style={styles.tabIconContainer}>
               <MaterialIcons 
@@ -58,24 +62,27 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="add-placeholder"
         options={{
-          title: '记账',
-          tabBarButton: () => (
-            <TouchableOpacity
-              onPress={() => router.push('/add-entry' as any)}
-              style={styles.fabContainer}
-              activeOpacity={0.85}
-            >
-              <View style={styles.fab}>
-                <MaterialIcons name="add" size={32} color="#fff" />
-              </View>
-            </TouchableOpacity>
-          ),
+          title: t('entry.add_transaction'),
+          tabBarButton: (props) => {
+            const { style, onPress, ...rest } = props as any;
+            return (
+              <TouchableOpacity
+                style={[style, { justifyContent: 'center', alignItems: 'center', overflow: 'visible' }]}
+                onPress={() => router.push('/add-entry' as any)}
+                activeOpacity={0.85}
+              >
+                <View style={styles.fab}>
+                  <MaterialIcons name="add" size={32} color="#fff" />
+                </View>
+              </TouchableOpacity>
+            );
+          },
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
-          title: '更多',
+          title: t('tabs.settings'),
           tabBarIcon: ({ color, focused }) => (
             <View style={styles.tabIconContainer}>
               <MaterialIcons 
@@ -98,13 +105,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  fabContainer: {
-    top: -16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 68,
-    height: 68,
-  },
   fab: {
     width: 56,
     height: 56,
@@ -117,5 +117,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.35,
     shadowRadius: 10,
     elevation: 8,
+    position: 'absolute',
+    top: -20,
   },
 });

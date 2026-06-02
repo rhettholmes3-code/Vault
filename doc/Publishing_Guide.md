@@ -1,4 +1,4 @@
-# Vault 发布至 Google Play 与 OTA 热更新实操指南
+﻿# Vault 发布至 Google Play 与 OTA 热更新实操指南
 
 本指南将协助您将 Vault 个人记账应用部署并发布至 **Google Play 商店**，同时配置 **Expo Updates (OTA)** 热更新机制，以便在后续无需重复向应用商店提交审核即可更新应用。
 
@@ -12,7 +12,7 @@ Google Play 要求所有上架应用必须提供一个公开访问的隐私政�
 1. 在 GitHub 上新建一个公开的仓库，命名为 `vault-privacy`。
 2. 在该仓库根目录下，新建一个 `index.html` 文件，复制并贴入以下模板内容。
 3. 提交代码后，进入仓库的 **Settings -> Pages**，将 Source 设置为 `Deploy from a branch` (通常是 `main` 分支的 `/root`)，保存。
-4. 几分钟后即可获得形如 `https://<your-github-username>.github.io/vault-privacy/` 的链接，将此链接填入 Google Play 控制台和 `app.json` 中。
+4. 几分钟后即可获得形如 `https://rhettholmes3-code.github.io/Vault/` 的链接，将此链接填入 Google Play 控制台和 `app.json` 中。
 
 ### 📄 隐私政策 HTML 模板：
 ```html

@@ -4,6 +4,7 @@ import { PeriodType, PeriodStats, TrendData, StructureData, TrendPoint, Structur
 import { getCategoryConfig } from '../constants/categories';
 import { getMonthRange, getYearRange, formatToSqlDate } from '../utils/dateUtils';
 import { BudgetService } from './BudgetService';
+import { t, i18n } from '../constants/i18n';
 
 export class StatisticsService {
   /**
@@ -13,14 +14,17 @@ export class StatisticsService {
     const db = await getDatabase();
     const { start, end } = periodType === 'month' ? getMonthRange(date) : getYearRange(date);
     
-    const rows = await db.getAllAsync<{ type: string; total: number }>(QUERIES.GET_PERIOD_SUMS, [start, end]);
+    const rows = await db.getAllAsync<{ type: string; total: number }>(
+      QUERIES.GET_PERIOD_SUMS, 
+      [start || '', end || '']
+    );
     
     let totalIncome = 0;
     let totalExpense = 0;
     
     for (const row of rows) {
-      if (row.type === 'income') totalIncome += row.total;
-      if (row.type === 'expense') totalExpense += row.total;
+      if (row.type === 'income') totalIncome += Number(row.total) || 0;
+      if (row.type === 'expense') totalExpense += Number(row.total) || 0;
     }
     
     const balance = totalIncome - totalExpense;
@@ -41,7 +45,7 @@ export class StatisticsService {
     let budgetLimit = undefined;
     
     if (periodType === 'month') {
-      const budget = await BudgetService.getBudget();
+      const budget = await BudgetService.getMonthlyBudget();
       if (budget > 0) {
         budgetLimit = budget;
         budgetRemaining = budget - totalExpense;
@@ -64,85 +68,78 @@ export class StatisticsService {
    * Generates trend chart data for a given period.
    */
   static async getTrendData(date: Date, periodType: PeriodType): Promise<TrendData> {
-    const db = await getDatabase();
-    const { start, end } = periodType === 'month' ? getMonthRange(date) : getYearRange(date);
-    
-    // Group by date for month, by month for year
-    const isMonth = periodType === 'month';
-    const groupFormat = isMonth ? '%Y-%m-%d' : '%Y-%m';
-    
-    const query = `
-      SELECT 
-        strftime('${groupFormat}', date) as dateKey,
-        type, 
-        SUM(amount) as total 
-      FROM transactions 
-      WHERE date >= ? AND date <= ? 
-      GROUP BY dateKey, type
-      ORDER BY dateKey ASC;
-    `;
-    
-    const rows = await db.getAllAsync<{ dateKey: string; type: string; total: number }>(query, [start, end]);
-    
-    const pointsMap = new Map<string, { income: number; expense: number }>();
-    
-    // Initialize map
-    if (isMonth) {
-      const year = date.getFullYear();
-      const month = date.getMonth();
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
-      for (let i = 1; i <= daysInMonth; i++) {
-        const d = new Date(year, month, i);
-        const key = formatToSqlDate(d);
-        pointsMap.set(key, { income: 0, expense: 0 });
-      }
-    } else {
-      const year = date.getFullYear();
-      for (let i = 0; i < 12; i++) {
-        const monthStr = String(i + 1).padStart(2, '0');
-        const key = `${year}-${monthStr}`;
-        pointsMap.set(key, { income: 0, expense: 0 });
-      }
-    }
-    
-    for (const row of rows) {
-      const existing = pointsMap.get(row.dateKey);
-      if (existing) {
-        if (row.type === 'income') existing.income += row.total;
-        if (row.type === 'expense') existing.expense += row.total;
-      }
-    }
-    
-    const budget = isMonth ? await BudgetService.getBudget() : 0;
-    const dailyBudget = isMonth && budget > 0 ? budget / pointsMap.size : 0;
-    const monthlyBudget = !isMonth ? await BudgetService.getBudget() : 0; // rough proxy
-    
     const labels: string[] = [];
     const incomeData: number[] = [];
     const expenseData: number[] = [];
     const budgetData: number[] = [];
     const points: TrendPoint[] = [];
-    
-    Array.from(pointsMap.entries()).sort((a, b) => a[0].localeCompare(b[0])).forEach(([key, val]) => {
-      const label = isMonth ? parseInt(key.split('-')[2], 10).toString() : parseInt(key.split('-')[1], 10) + '月';
-      const bLimit = isMonth ? dailyBudget : monthlyBudget;
+
+    const budget = await BudgetService.getMonthlyBudget();
+
+    if (periodType === 'month') {
+      // Rolling 12 Months (Ending at the current select month)
+      const promises: Promise<PeriodStats>[] = [];
+      const dates: Date[] = [];
       
-      // For month view, maybe we don't need all 30 labels, chart kit will just take what we give
-      // But we will give it all
-      labels.push(label);
-      incomeData.push(val.income);
-      expenseData.push(val.expense);
-      budgetData.push(bLimit);
+      for (let i = 11; i >= 0; i--) {
+        const d = new Date(date.getFullYear(), date.getMonth() - i, 1);
+        dates.push(d);
+        promises.push(this.getPeriodStats(d, 'month'));
+      }
       
-      points.push({
-        label,
-        dateKey: key,
-        income: val.income,
-        expense: val.expense,
-        budget: bLimit
+      const statsList = await Promise.all(promises);
+      
+      statsList.forEach((stats, idx) => {
+        const d = dates[idx];
+        const label = i18n.locale === 'zh'
+          ? `${d.getMonth() + 1}月`
+          : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()];
+        labels.push(label);
+        incomeData.push(stats.totalIncome);
+        expenseData.push(stats.totalExpense);
+        budgetData.push(budget);
+        
+        points.push({
+          label,
+          dateKey: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+          income: stats.totalIncome,
+          expense: stats.totalExpense,
+          budget: budget
+        });
       });
-    });
-    
+    } else {
+      // Rolling 5 Years (Ending at the current select year)
+      const promises: Promise<PeriodStats>[] = [];
+      const dates: Date[] = [];
+      
+      for (let i = 4; i >= 0; i--) {
+        const d = new Date(date.getFullYear() - i, 0, 1);
+        dates.push(d);
+        promises.push(this.getPeriodStats(d, 'year'));
+      }
+      
+      const statsList = await Promise.all(promises);
+      
+      statsList.forEach((stats, idx) => {
+        const d = dates[idx];
+        const label = i18n.locale === 'zh' ? `${d.getFullYear()}年` : `${d.getFullYear()}`;
+        labels.push(label);
+        incomeData.push(stats.totalIncome);
+        expenseData.push(stats.totalExpense);
+        
+        const yearlyBudget = budget > 0 ? budget * 12 : 0;
+        budgetData.push(yearlyBudget);
+        
+        points.push({
+          label,
+          dateKey: `${d.getFullYear()}`,
+          income: stats.totalIncome,
+          expense: stats.totalExpense,
+          budget: yearlyBudget
+        });
+      });
+    }
+
     return {
       labels,
       incomeData,
@@ -161,17 +158,17 @@ export class StatisticsService {
     
     const rows = await db.getAllAsync<{ category: string; total: number; count: number }>(
       QUERIES.GET_CATEGORY_RANKING, 
-      [type, start, end]
+      [type || 'expense', start || '', end || '']
     );
     
-    const totalAmount = rows.reduce((sum, row) => sum + row.total, 0);
+    const totalAmount = rows.reduce((sum, row) => sum + (Number(row.total) || 0), 0);
     
     const points: StructurePoint[] = rows.map(row => {
-      const config = getCategoryConfig(type, row.category);
+      const config = getCategoryConfig(type || 'expense', row.category);
       return {
         category: row.category,
-        amount: row.total,
-        percentage: totalAmount > 0 ? (row.total / totalAmount) * 100 : 0,
+        amount: Number(row.total) || 0,
+        percentage: totalAmount > 0 ? ((Number(row.total) || 0) / totalAmount) * 100 : 0,
         color: config.color,
         icon: config.icon,
         name: config.name
@@ -185,6 +182,114 @@ export class StatisticsService {
         colors: points.map(p => p.color)
       }],
       points
+    };
+  }
+
+  /**
+   * Generates rolling stacked category breakdown trend data over time.
+   */
+  static async getStackedTrendData(
+    date: Date, 
+    periodType: PeriodType, 
+    type: 'expense' | 'income'
+  ): Promise<{
+    labels: string[];
+    legend: string[];
+    data: number[][];
+    barColors: string[];
+  }> {
+    const db = await getDatabase();
+    const labels: string[] = [];
+    const dates: Date[] = [];
+    const limit = periodType === 'month' ? 12 : 5;
+
+    for (let i = limit - 1; i >= 0; i--) {
+      const d = periodType === 'month'
+        ? new Date(date.getFullYear(), date.getMonth() - i, 1)
+        : new Date(date.getFullYear() - i, 0, 1);
+      dates.push(d);
+      
+      const label = periodType === 'month'
+        ? (i18n.locale === 'zh'
+          ? `${d.getMonth() + 1}月`
+          : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()])
+        : (i18n.locale === 'zh' ? `${d.getFullYear()}年` : `${d.getFullYear()}`);
+      labels.push(label);
+    }
+
+    const promises = dates.map(d => {
+      const { start, end } = periodType === 'month' ? getMonthRange(d) : getYearRange(d);
+      return db.getAllAsync<{ category: string; total: number }>(
+        QUERIES.GET_CATEGORY_RANKING,
+        [type, start || '', end || '']
+      );
+    });
+
+    const results = await Promise.all(promises);
+
+    // Sum overall totals to find Top 4 categories
+    const categoryTotals: Record<string, number> = {};
+    results.forEach(list => {
+      list.forEach(row => {
+        categoryTotals[row.category] = (categoryTotals[row.category] || 0) + Number(row.total);
+      });
+    });
+
+    const sortedCategories = Object.keys(categoryTotals).sort(
+      (a, b) => categoryTotals[b] - categoryTotals[a]
+    );
+
+    if (sortedCategories.length === 0) {
+      // Safe fallback if there are no transactions
+      return {
+        labels,
+        legend: [t('stats.no_chart_data')],
+        data: Array(labels.length).fill([0]),
+        barColors: ['#94a3b8']
+      };
+    }
+
+    const top4 = sortedCategories.slice(0, 4);
+    const hasOthers = sortedCategories.length > 4;
+    const stackKeys = [...top4];
+    if (hasOthers) {
+      stackKeys.push('other');
+    }
+
+    const data: number[][] = [];
+    dates.forEach((_, idx) => {
+      const periodMap: Record<string, number> = {};
+      let otherSum = 0;
+
+      results[idx].forEach(row => {
+        if (top4.includes(row.category)) {
+          periodMap[row.category] = Number(row.total) || 0;
+        } else {
+          otherSum += Number(row.total) || 0;
+        }
+      });
+
+      if (hasOthers) {
+        periodMap['other'] = otherSum;
+      }
+
+      data.push(stackKeys.map(key => periodMap[key] || 0));
+    });
+
+    const legend: string[] = [];
+    const barColors: string[] = [];
+
+    stackKeys.forEach(key => {
+      const config = getCategoryConfig(type, key);
+      legend.push(config.name);
+      barColors.push(config.color);
+    });
+
+    return {
+      labels,
+      legend,
+      data,
+      barColors
     };
   }
 }

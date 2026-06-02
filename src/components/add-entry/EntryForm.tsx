@@ -8,9 +8,9 @@ import {
   ScrollView, 
   KeyboardAvoidingView, 
   Platform, 
-  SafeAreaView,
   StatusBar
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -21,8 +21,9 @@ import { COLORS } from '@/src/constants/Colors';
 import { TransactionType } from '@/src/types/transaction';
 import { CATEGORIES } from '@/src/constants/categories';
 import { evaluateExpression } from '@/src/utils/numberUtils';
-import { formatToSqlDate, isYesterday, toDate } from '@/src/utils/dateUtils';
+import { formatToSqlDate, isYesterday, toDate, formatDate } from '@/src/utils/dateUtils';
 import { useTransactionStore } from '@/src/stores/useTransactionStore';
+import { t } from '@/src/constants/i18n';
 
 // Common Components
 import { SegmentedControl } from '../common/SegmentedControl';
@@ -48,7 +49,7 @@ export function EntryForm({ id }: EntryFormProps) {
 
   // Load existing transaction if editing
   const editingTx = useMemo(() => {
-    return id ? transactions.find(t => t.id === id) : null;
+    return id ? transactions.find(tData => tData.id === id) : null;
   }, [id, transactions]);
 
   // Core form states
@@ -186,12 +187,12 @@ export function EntryForm({ id }: EntryFormProps) {
   const getDateDisplayText = () => {
     const today = new Date();
     if (currentDate.toDateString() === today.toDateString()) {
-      return '今天';
+      return t('overview.today');
     }
     if (isDateYesterday) {
-      return '昨天';
+      return t('overview.yesterday');
     }
-    return `${currentDate.getMonth() + 1}月${currentDate.getDate()}日`;
+    return formatDate(currentDate);
   };
 
   // Save logic
@@ -254,7 +255,7 @@ export function EntryForm({ id }: EntryFormProps) {
         {/* TOP HEADER: Expense/Income Toggle */}
         <View style={styles.header}>
           <SegmentedControl
-            values={['支出', '收入']}
+            values={[t('overview.expense'), t('overview.income')]}
             selectedIndex={type === 'expense' ? 0 : 1}
             onChange={(idx) => {
               triggerHaptic();
@@ -315,7 +316,7 @@ export function EntryForm({ id }: EntryFormProps) {
                 activeOpacity={0.7}
               >
                 <MaterialIcons name="calendar-today" size={16} color={colors.textSecondary} />
-                <Text style={[styles.dateText, { color: isDateYesterday || getDateDisplayText() === '今天' ? colors.text : colors.primary }]}>
+                <Text style={[styles.dateText, { color: isDateYesterday || getDateDisplayText() === t('overview.today') ? colors.text : COLORS.primary }]}>
                   {getDateDisplayText()}
                 </Text>
               </TouchableOpacity>
@@ -334,7 +335,7 @@ export function EntryForm({ id }: EntryFormProps) {
                 ]}
               >
                 <Text style={[styles.yesterdayChipText, { color: isDateYesterday ? colors.tint : colors.textSecondary }]}>
-                  {isDateYesterday ? '今天' : '昨天'}
+                  {isDateYesterday ? t('overview.today') : t('overview.yesterday')}
                 </Text>
               </TouchableOpacity>
 
@@ -345,7 +346,7 @@ export function EntryForm({ id }: EntryFormProps) {
               <TextInput
                 value={note}
                 onChangeText={setNote}
-                placeholder="添加备注..."
+                placeholder={t('entry.note_placeholder')}
                 placeholderTextColor={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}
                 style={[styles.noteInput, { color: colors.text }]}
                 maxLength={40}
@@ -370,7 +371,7 @@ export function EntryForm({ id }: EntryFormProps) {
               style={[styles.actionBtn, styles.cancelBtn, { borderColor: colors.border }]}
               activeOpacity={0.7}
             >
-              <Text style={[styles.actionBtnText, { color: colors.textSecondary }]}>取消</Text>
+              <Text style={[styles.actionBtnText, { color: colors.textSecondary }]}>{t('overview.cancel')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
@@ -397,7 +398,7 @@ export function EntryForm({ id }: EntryFormProps) {
                   }
                 ]}
               >
-                完成
+                {t('entry.save')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -413,7 +414,7 @@ export function EntryForm({ id }: EntryFormProps) {
               activeOpacity={0.6}
             >
               <MaterialIcons name="delete" size={18} color={COLORS.danger} />
-              <Text style={styles.deleteBtnText}>删除此记录</Text>
+              <Text style={styles.deleteBtnText}>{t('entry.delete_record')}</Text>
             </TouchableOpacity>
           )}
 
@@ -423,7 +424,7 @@ export function EntryForm({ id }: EntryFormProps) {
         <BottomDrawer
           visible={showDatePicker && Platform.OS === 'ios'}
           onClose={() => setShowDatePicker(false)}
-          title="选择日期"
+          title={t('entry.select_date')}
           height={320}
         >
           <View style={styles.datePickerDrawer}>
@@ -462,9 +463,9 @@ export function EntryForm({ id }: EntryFormProps) {
         {/* Delete Double Confirmation Modal */}
         <ConfirmModal
           visible={showDeleteConfirm}
-          title="删除记录"
-          message="确定要永久删除这条记录吗？此操作将无法撤销。"
-          confirmText="删除"
+          title={t('overview.delete_confirm_title')}
+          message={t('overview.delete_confirm_desc')}
+          confirmText={t('overview.delete')}
           isDestructive={true}
           onConfirm={handleDelete}
           onCancel={() => setShowDeleteConfirm(false)}

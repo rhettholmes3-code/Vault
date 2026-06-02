@@ -1,3 +1,5 @@
+import { i18n } from '../constants/i18n';
+
 /**
  * Safely converts a date parameter (Date object or string) into a Date instance.
  */
@@ -25,11 +27,16 @@ export function isYesterday(date: Date | string): boolean {
 }
 
 /**
- * Formats date into "M月D日".
+ * Formats date into localized string ("M月D日" for zh, "MMM DD" for others).
  */
 export function formatDate(date: Date | string): string {
   const d = toDate(date);
-  return `${d.getMonth() + 1}月${d.getDate()}日`;
+  if (i18n.locale === 'zh') {
+    return `${d.getMonth() + 1}月${d.getDate()}日`;
+  }
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${month}/${day}`;
 }
 
 /**

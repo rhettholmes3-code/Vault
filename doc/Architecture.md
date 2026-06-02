@@ -84,7 +84,9 @@ Vault/
 │   ├── constants/                # 全局常量
 │   │   ├── categories.ts         # 分类配置（图标/颜色/名称）
 │   │   ├── Colors.ts             # 设计色彩系统（明暗主题 Token）
-│   │   └── config.ts             # App 全局配置
+│   │   ├── config.ts             # App 全局配置
+│   │   ├── locales/              # 多语言本地化字典 (zh.json, en.json)
+│   │   └── i18n.ts               # 国际化配置 (i18n-js + expo-localization)
 │   │
 │   ├── hooks/                    # 自定义 Hooks
 │   │   ├── useDatabase.ts        # 数据库初始化 Hook

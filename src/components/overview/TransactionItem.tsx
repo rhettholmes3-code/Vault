@@ -8,6 +8,7 @@ import { useTheme } from '@/src/hooks/useTheme';
 import { formatAmount } from '@/src/utils/numberUtils';
 import { COLORS } from '@/src/constants/Colors';
 import { useRouter } from 'expo-router';
+import { t } from '@/src/constants/i18n';
 
 interface TransactionItemProps {
   transaction: Transaction;
@@ -20,10 +21,14 @@ export function TransactionItem({ transaction, onDelete }: TransactionItemProps)
   const categoryConfig = getCategoryConfig(transaction.type, transaction.category);
 
   const handleDelete = () => {
-    Alert.alert('确认删除', '您确定要删除这条记录吗？', [
-      { text: '取消', style: 'cancel' },
-      { text: '删除', style: 'destructive', onPress: () => onDelete(transaction.id) },
-    ]);
+    Alert.alert(
+      t('overview.delete_confirm_title'), 
+      t('overview.delete_confirm_desc'), 
+      [
+        { text: t('overview.cancel'), style: 'cancel' },
+        { text: t('overview.delete'), style: 'destructive', onPress: () => onDelete(transaction.id) },
+      ]
+    );
   };
 
   const renderRightActions = (progress: RNAnimated.AnimatedInterpolation<number>, dragX: RNAnimated.AnimatedInterpolation<number>) => {

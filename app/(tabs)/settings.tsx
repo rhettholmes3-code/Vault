@@ -7,12 +7,13 @@ import { BudgetDrawer } from '@/src/components/settings/BudgetDrawer';
 import { ExportDrawer } from '@/src/components/settings/ExportDrawer';
 import { useSettingsStore } from '@/src/stores/useSettingsStore';
 import { useTransactionStore } from '@/src/stores/useTransactionStore';
-import * as Constants from 'expo-constants';
+import { t } from '@/src/constants/i18n';
 
 export default function SettingsScreen() {
   const { colors, isDark, toggleTheme } = useTheme();
-  const { monthlyBudget, fetchSettings } = useSettingsStore();
+  const { monthlyBudget, fetchSettings, languagePreference, setLanguagePreference, currencyPreference, setCurrencyPreference, getCurrencySymbol } = useSettingsStore();
   const { clearAllTransactions } = useTransactionStore();
+  const currencySymbol = getCurrencySymbol();
   
   const [budgetVisible, setBudgetVisible] = useState(false);
   const [exportVisible, setExportVisible] = useState(false);
@@ -23,16 +24,16 @@ export default function SettingsScreen() {
 
   const handleClearData = () => {
     Alert.alert(
-      '清除所有数据',
-      '此操作将永久删除所有交易记录和设置，且无法撤销。确定要继续吗？',
+      t('settings.clear_confirm_title'),
+      t('settings.clear_confirm_desc'),
       [
-        { text: '取消', style: 'cancel' },
+        { text: t('overview.cancel'), style: 'cancel' },
         { 
-          text: '确定删除', 
+          text: t('settings.confirm_delete_ok'), 
           style: 'destructive',
           onPress: async () => {
             await clearAllTransactions();
-            Alert.alert('已清除', '所有本地数据已成功清除。');
+            Alert.alert(t('settings.clear_success'), t('settings.data_cleared'));
           }
         },
       ]
@@ -41,21 +42,21 @@ export default function SettingsScreen() {
 
   const handleGenerateMockData = () => {
     Alert.alert(
-      '生成演示数据',
-      '此操作将清除所有现有数据，并生成过去 180 天的高拟真收支记录用于演示。确定要继续吗？',
+      t('settings.confirm_generate'),
+      t('settings.confirm_generate_desc'),
       [
-        { text: '取消', style: 'cancel' },
+        { text: t('overview.cancel'), style: 'cancel' },
         { 
-          text: '确定生成', 
+          text: t('settings.confirm_ok'), 
           onPress: async () => {
             try {
               const { MockDataService } = await import('@/src/services/MockDataService');
               const count = await MockDataService.generateMockData();
               await useTransactionStore.getState().fetchTransactions();
-              Alert.alert('生成成功', `已成功生成 ${count} 条演示记录！`);
+              Alert.alert(t('settings.mock_success'), `${count} records generated.`);
             } catch (e) {
               console.error(e);
-              Alert.alert('生成失败', '生成演示数据时出现错误。');
+              Alert.alert('Error', 'Failed to generate mock data.');
             }
           }
         },
@@ -63,35 +64,88 @@ export default function SettingsScreen() {
     );
   };
 
+  const handleLanguagePress = () => {
+    Alert.alert(
+      t('settings.language'),
+      t('settings.language_desc'),
+      [
+        { 
+          text: t('settings.lang_auto'), 
+          onPress: () => setLanguagePreference('auto') 
+        },
+        { 
+          text: t('settings.lang_zh'), 
+          onPress: () => setLanguagePreference('zh') 
+        },
+        { 
+          text: t('settings.lang_en'), 
+          onPress: () => setLanguagePreference('en') 
+        },
+        { text: t('overview.cancel'), style: 'cancel' }
+      ]
+    );
+  };
+
+  const getLanguageLabel = () => {
+    if (languagePreference === 'auto') return t('settings.lang_auto');
+    if (languagePreference === 'zh') return t('settings.lang_zh');
+    return t('settings.lang_en');
+  };
+
+  const handleCurrencyPress = () => {
+    Alert.alert(
+      t('settings.currency'),
+      t('settings.currency_desc'),
+      [
+        { 
+          text: t('settings.currency_auto'), 
+          onPress: () => setCurrencyPreference('auto') 
+        },
+        { text: 'CNY (¥)', onPress: () => setCurrencyPreference('CNY') },
+        { text: 'USD ($)', onPress: () => setCurrencyPreference('USD') },
+        { text: 'GBP (£)', onPress: () => setCurrencyPreference('GBP') },
+        { text: 'CAD (C$)', onPress: () => setCurrencyPreference('CAD') },
+        { text: 'AUD (A$)', onPress: () => setCurrencyPreference('AUD') },
+        { text: 'NZD (NZ$)', onPress: () => setCurrencyPreference('NZD') },
+        { text: t('overview.cancel'), style: 'cancel' }
+      ]
+    );
+  };
+
+  const getCurrencyLabel = () => {
+    if (currencyPreference === 'auto') return t('settings.currency_auto');
+    return currencyPreference;
+  };
+
   const menuItems: { title: string; items: any[] }[] = [
     {
-      title: '账户设置',
+      title: t('settings.account'),
       items: [
         { 
           id: 'budget', 
-          label: '每月预算', 
-          value: `¥${monthlyBudget.toLocaleString()}`, 
-          icon: 'account_balance_wallet', 
+          label: t('settings.budget'), 
+          value: `${currencySymbol}${monthlyBudget.toLocaleString()}`, 
+          icon: 'account-balance-wallet', 
           color: '#3b82f6',
           onPress: () => setBudgetVisible(true)
         },
         { 
           id: 'export', 
-          label: '导出账单', 
-          value: 'CSV 格式', 
-          icon: 'file_download', 
+          label: t('settings.data_export'), 
+          value: t('settings.csv_format'), 
+          icon: 'file-download', 
           color: '#10b981',
           onPress: () => setExportVisible(true)
         },
       ]
     },
     {
-      title: '应用偏好',
+      title: t('settings.preferences'),
       items: [
         { 
           id: 'theme', 
-          label: '深色模式', 
-          icon: 'dark_mode', 
+          label: t('settings.theme'), 
+          icon: 'dark-mode', 
           color: '#8b5cf6',
           right: (
             <Switch 
@@ -102,21 +156,37 @@ export default function SettingsScreen() {
             />
           )
         },
+        { 
+          id: 'language', 
+          label: t('settings.language'), 
+          value: getLanguageLabel(), 
+          icon: 'language', 
+          color: '#3b82f6',
+          onPress: handleLanguagePress
+        },
+        { 
+          id: 'currency', 
+          label: t('settings.currency'), 
+          value: getCurrencyLabel(), 
+          icon: 'monetization-on', 
+          color: '#10b981',
+          onPress: handleCurrencyPress
+        },
       ]
     },
     {
-      title: '关于与支持',
+      title: t('settings.about'),
       items: [
         { 
           id: 'version', 
-          label: '版本信息', 
-          value: 'v1.0.0 (Stable)', 
+          label: t('settings.version'), 
+          value: `v1.0.0 (${t('settings.stable')})`, 
           icon: 'info', 
           color: '#64748b' 
         },
         { 
           id: 'github', 
-          label: 'GitHub 开源', 
+          label: t('settings.github'), 
           icon: 'code', 
           color: '#334155',
           onPress: () => Linking.openURL('https://github.com')
@@ -124,20 +194,20 @@ export default function SettingsScreen() {
       ]
     },
     {
-      title: '开发者选项',
+      title: t('settings.dev_options'),
       items: [
         {
           id: 'generate_mock',
-          label: '生成演示数据',
-          value: '180天数据',
+          label: t('settings.mock_data'),
+          value: t('settings.mock_data_desc'),
           icon: 'science',
           color: '#eab308',
           onPress: handleGenerateMockData
         },
         { 
           id: 'clear', 
-          label: '清除所有数据', 
-          icon: 'delete_forever', 
+          label: t('settings.clear_data'), 
+          icon: 'delete-forever', 
           color: '#ef4444', 
           onPress: handleClearData
         },
@@ -147,7 +217,7 @@ export default function SettingsScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.title, { color: colors.text }]}>更多</Text>
+      <Text style={[styles.title, { color: colors.text }]}>{t('settings.title')}</Text>
       
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {menuItems.map((section, idx) => (
@@ -182,7 +252,7 @@ export default function SettingsScreen() {
 
         <View style={styles.footer}>
           <Text style={[styles.footerText, { color: colors.textSecondary }]}>Vault © 2026</Text>
-          <Text style={[styles.footerSubText, { color: colors.textSecondary + '80' }]}>隐私优先 · 离线存储 · 开源记账</Text>
+          <Text style={[styles.footerSubText, { color: colors.textSecondary + '80' }]}>{t('settings.footer_desc')}</Text>
         </View>
       </ScrollView>
 

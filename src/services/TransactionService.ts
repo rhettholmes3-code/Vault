@@ -49,14 +49,14 @@ export class TransactionService {
     await db.runAsync(
       QUERIES.INSERT_TRANSACTION,
       [
-        newTransaction.id,
-        newTransaction.type,
-        newTransaction.amount,
-        newTransaction.category,
-        newTransaction.date,
-        newTransaction.note,
-        newTransaction.created_at,
-        newTransaction.updated_at,
+        newTransaction.id || '',
+        newTransaction.type || 'expense',
+        newTransaction.amount || 0,
+        newTransaction.category || '',
+        newTransaction.date || '',
+        newTransaction.note || '',
+        newTransaction.created_at || Date.now(),
+        newTransaction.updated_at || Date.now(),
       ]
     );
 
@@ -89,12 +89,12 @@ export class TransactionService {
     await db.runAsync(
       QUERIES.UPDATE_TRANSACTION,
       [
-        updated.type,
-        updated.amount,
-        updated.category,
-        updated.date,
-        updated.note,
-        updated.updated_at,
+        updated.type || 'expense',
+        updated.amount || 0,
+        updated.category || '',
+        updated.date || '',
+        updated.note || '',
+        updated.updated_at || Date.now(),
         id,
       ]
     );

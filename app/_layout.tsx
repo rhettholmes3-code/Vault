@@ -3,10 +3,11 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { useColorScheme } from 'react-native';
 import 'react-native-reanimated';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { useTheme } from '@/src/hooks/useTheme';
+import { useSettingsStore } from '@/src/stores/useSettingsStore';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -39,6 +40,10 @@ export default function RootLayout() {
       try {
         const { initializeDatabase } = await import('@/src/database/connection');
         await initializeDatabase();
+
+        // 启动时预先载入 SQLite 设置到 Zustand 内存状态 (这会同步初始化 i18n)
+        const { useSettingsStore } = await import('@/src/stores/useSettingsStore');
+        await useSettingsStore.getState().fetchSettings();
       } catch (e) {
         console.warn('数据库初始化失败:', e);
       } finally {
@@ -60,28 +65,32 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const { colorScheme } = useTheme();
+  // 订阅 languagePreference 以便在用户手动切换语言时强制重新渲染整个导航树
+  const { languagePreference } = useSettingsStore();
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen 
-          name="add-entry" 
-          options={{ 
-            presentation: 'fullScreenModal',
-            headerShown: false,
-            animation: 'slide_from_bottom',
-          }} 
-        />
-        <Stack.Screen 
-          name="edit-entry/[id]" 
-          options={{ 
-            presentation: 'fullScreenModal',
-            headerShown: false,
-            animation: 'slide_from_bottom',
-          }} 
-        />
-      </Stack>
-    </ThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen 
+            name="add-entry" 
+            options={{ 
+              presentation: 'fullScreenModal',
+              headerShown: false,
+              animation: 'slide_from_bottom',
+            }} 
+          />
+          <Stack.Screen 
+            name="edit-entry/[id]" 
+            options={{ 
+              presentation: 'fullScreenModal',
+              headerShown: false,
+              animation: 'slide_from_bottom',
+            }} 
+          />
+        </Stack>
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }

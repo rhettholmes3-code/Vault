@@ -2,6 +2,8 @@ import { cacheDirectory, writeAsStringAsync, EncodingType } from 'expo-file-syst
 import * as Sharing from 'expo-sharing';
 import { Transaction } from '../types/transaction';
 import { getCategoryConfig } from '../constants/categories';
+import { t } from '../constants/i18n';
+import { useSettingsStore, getDeviceCurrency } from '../stores/useSettingsStore';
 
 export class ExportService {
   /**
@@ -9,27 +11,36 @@ export class ExportService {
    */
   static async exportToCSV(transactions: Transaction[], suffix: string = 'All') {
     if (transactions.length === 0) {
-      throw new Error('没有可导出的交易记录');
+      throw new Error(t('settings.export_fail'));
     }
 
+    const state = useSettingsStore.getState();
+    const activeCurrency = state.currencyPreference === 'auto' ? getDeviceCurrency() : state.currencyPreference;
+
     // CSV 表头
-    const header = ['日期', '类型', '金额', '分类', '备注'].join(',');
+    const header = [
+      t('csv.date'), 
+      t('csv.type'), 
+      `${t('csv.amount')} (${activeCurrency})`, 
+      t('csv.category'), 
+      t('csv.note')
+    ].join(',');
     
     // CSV 数据行
-    const rows = transactions.map(t => {
-      const config = getCategoryConfig(t.type, t.category);
+    const rows = transactions.map(tData => {
+      const config = getCategoryConfig(tData.type, tData.category);
       return [
-        t.date.split('T')[0],
-        t.type === 'expense' ? '支出' : '收入',
-        t.amount.toFixed(2),
+        tData.date.split('T')[0],
+        tData.type === 'expense' ? t('csv.expense') : t('csv.income'),
+        tData.amount.toFixed(2),
         config.name,
-        `"${t.note.replace(/"/g, '""')}"` // 处理备注中的引号
+        `"${tData.note.replace(/"/g, '""')}"` // 处理备注中的引号
       ].join(',');
     });
 
     // UTF-8 BOM 以支持 Excel 直接打开中文不乱码
     const csvContent = '\uFEFF' + [header, ...rows].join('\n');
-    const fileName = `Vault_Export_${suffix}.csv`;
+    const fileName = `${t('csv.filename')}_${suffix}.csv`;
     const fileUri = `${cacheDirectory}${fileName}`;
 
     try {
@@ -43,11 +54,11 @@ export class ExportService {
       if (isSharingAvailable) {
         await Sharing.shareAsync(fileUri, {
           mimeType: 'text/csv',
-          dialogTitle: '导出账单',
+          dialogTitle: t('settings.data_export'),
           UTI: 'public.comma-separated-values-text', // iOS 特有
         });
       } else {
-        throw new Error('当前设备不支持分享文件');
+        throw new Error('Sharing is not available on this device');
       }
     } catch (error) {
       console.error('Export failed:', error);

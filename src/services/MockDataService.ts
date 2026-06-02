@@ -271,7 +271,16 @@ export class MockDataService {
       for (const t of transactions) {
         await db.runAsync(
           QUERIES.INSERT_TRANSACTION,
-          [t.id, t.type, t.amount, t.category, t.date, t.note, t.created_at, t.updated_at]
+          [
+            t.id || '',
+            t.type || 'expense',
+            t.amount || 0,
+            t.category || '',
+            t.date || '',
+            t.note || '',
+            t.created_at || Date.now(),
+            t.updated_at || Date.now()
+          ]
         );
       }
     });
