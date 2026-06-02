@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Vault",
+    "name": "Vault离线记账",
     "slug": "vault",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -13,10 +13,20 @@
       "resizeMode": "contain",
       "backgroundColor": "#000000"
     },
+    "updates": {
+      "url": "https://u.expo.dev/b827d73b-4fb2-4bb9-b4cd-b14c141aeb46"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "CFBundleDisplayName": "Vault"
+      }
     },
     "android": {
+      "package": "com.rhettholmes.vault",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -32,10 +42,18 @@
     "plugins": [
       "expo-router",
       "expo-sqlite",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "b827d73b-4fb2-4bb9-b4cd-b14c141aeb46"
+      }
+    },
+    "owner": "rhettholmes"
   }
 }
