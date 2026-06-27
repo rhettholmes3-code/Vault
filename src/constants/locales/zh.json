@@ -1,4 +1,4 @@
-{
+﻿{
   "category": {
     "food": "餐饮",
     "transport": "交通",
@@ -15,6 +15,12 @@
     "investment": "理财",
     "parttime": "兼职",
     "refund": "退款",
+    "gift": "礼物",
+    "sports": "运动",
+    "fruit": "水果",
+    "pet": "宠物",
+    "snack": "零食",
+    "medicine": "药品",
     "other": "其它"
   },
   "tabs": {
@@ -63,7 +69,9 @@
     "trend_btn": "趋势",
     "structure_btn": "结构",
     "expense_analysis": "支出分析",
-    "income_analysis": "收入分析"
+    "income_analysis": "收入分析",
+    "no_income_structure": "暂无收入构成数据",
+    "no_expense_structure": "暂无支出构成数据"
   },
   "entry": {
     "add_transaction": "记账",
@@ -73,7 +81,9 @@
     "save": "保存",
     "select_category": "选择分类",
     "smart_tips": "智能推荐",
-    "custom_date": "自定义日期"
+    "custom_date": "自定义日期",
+    "delete_record": "删除这笔记录",
+    "select_date": "选择日期"
   },
   "settings": {
     "title": "设置",
@@ -92,6 +102,8 @@
     "lang_auto": "跟随系统",
     "lang_zh": "简体中文",
     "lang_en": "English",
+    "categories": "类别配置",
+    "categories_desc": "自定义记账类别与排序",
     "currency": "货币设置",
     "currency_desc": "选择货币符号，或跟随手机系统及语言",
     "currency_auto": "跟随系统",
@@ -138,5 +150,27 @@
     "expense": "支出",
     "income": "收入",
     "filename": "财务导出"
+  },
+  "category_mgmt": {
+    "title": "类别配置",
+    "expense": "支出",
+    "income": "收入",
+    "active_section": "已启用类别 (长按拖拽排序)",
+    "active_section_edit": "已启用类别 (点击下架 / 长按拖拽排序)",
+    "candidate_section": "候选类别 (点击启用)",
+    "candidate_section_delete": "候选类别 (点击启用 / 长按删除)",
+    "add_custom": "新增自定义类别",
+    "delete_title": "确认删除",
+    "delete_desc": "确定要删除该自定义类别吗？已有的交易记录不会受影响，但会显示为默认灰色图标。",
+    "delete_confirm": "删除",
+    "cancel": "取消",
+    "input_placeholder": "类别名称 (最多四个字)",
+    "select_icon": "选择图标",
+    "select_color": "选择颜色",
+    "create_category": "创建类别",
+    "toast_empty_name": "请输入类别名称",
+    "toast_duplicate_name": "该类别名称已存在",
+    "toast_success": "创建成功",
+    "toast_too_long": "类别名称不能超过4个字"
   }
 }

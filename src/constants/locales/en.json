@@ -1,4 +1,4 @@
-{
+﻿{
   "category": {
     "food": "Food",
     "transport": "Transport",
@@ -15,6 +15,12 @@
     "investment": "Investment",
     "parttime": "Part-time",
     "refund": "Refund",
+    "gift": "Gift",
+    "sports": "Sports",
+    "fruit": "Fruit",
+    "pet": "Pet",
+    "snack": "Snack",
+    "medicine": "Medicine",
     "other": "Other"
   },
   "tabs": {
@@ -63,7 +69,9 @@
     "trend_btn": "Trend",
     "structure_btn": "Structure",
     "expense_analysis": "Expense",
-    "income_analysis": "Income"
+    "income_analysis": "Income",
+    "no_income_structure": "No income structure data",
+    "no_expense_structure": "No expense structure data"
   },
   "entry": {
     "add_transaction": "Add Entry",
@@ -73,7 +81,9 @@
     "save": "Save",
     "select_category": "Category",
     "smart_tips": "Smart Tips",
-    "custom_date": "Custom Date"
+    "custom_date": "Custom Date",
+    "delete_record": "Delete Record",
+    "select_date": "Select Date"
   },
   "settings": {
     "title": "Settings",
@@ -92,6 +102,8 @@
     "lang_auto": "System Default",
     "lang_zh": "简体中文",
     "lang_en": "English",
+    "categories": "Category Config",
+    "categories_desc": "Customize categories & sort order",
     "currency": "Currency",
     "currency_desc": "Select currency symbol, or follow system defaults",
     "currency_auto": "System Default",
@@ -138,5 +150,27 @@
     "expense": "Expense",
     "income": "Income",
     "filename": "Financial_Export"
+  },
+  "category_mgmt": {
+    "title": "Category Config",
+    "expense": "Expense",
+    "income": "Income",
+    "active_section": "Active (Drag to reorder)",
+    "active_section_edit": "Active (Tap to hide / Drag to reorder)",
+    "candidate_section": "Candidates (Tap to activate)",
+    "candidate_section_delete": "Candidates (Tap to activate / Long press to delete)",
+    "add_custom": "Add Custom Category",
+    "delete_title": "Confirm Delete",
+    "delete_desc": "Are you sure you want to delete this custom category? Existing records will keep the name but fallback to a default icon.",
+    "delete_confirm": "Delete",
+    "cancel": "Cancel",
+    "input_placeholder": "Category name (max 8 chars)",
+    "select_icon": "Select Icon",
+    "select_color": "Select Color",
+    "create_category": "Create Category",
+    "toast_empty_name": "Please enter category name",
+    "toast_duplicate_name": "Category name already exists",
+    "toast_success": "Category created",
+    "toast_too_long": "Category name too long"
   }
 }

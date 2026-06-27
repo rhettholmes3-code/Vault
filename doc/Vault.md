@@ -1,4 +1,4 @@
-# Vault - 个人记账应用
+﻿# Vault - 个人记账应用
 
 > 🔒 **核心价值：隐私优先** — 完全离线运行，无需网络，数据存储在本地。
 
@@ -22,7 +22,7 @@ Vault 是一款专为个人用户设计的离线记账应用。所有数据存�
 ## 核心功能
 
 - ✅ 快速记账 (支出/收入)
-- ✅ 分类管理 (支持自定义图标)
+- ✅ 分类管理 (支持自定义图标、颜色、排序、隐藏以及新增自定义类别)
 - ✅ 统计分析 (月度/年度趋势图)
 - ✅ 预算追踪 (环形进度条)
 - ✅ 数据导出 (CSV 格式)
@@ -68,11 +68,20 @@ Vault 是一款专为个人用户设计的离线记账应用。所有数据存�
 
 | 版本 | 日期 | 更新内容 |
 |------|------|----------|
+| v1.1.0 | 2026-06-27 | **v1.1 正式版本 — 类别自定义与多语言全量修复**。① **类别自定义管理**：支持在设置页面管理支出/收入类别，提供类别启用/隐藏双层机制、已启用类别长按拖拽排序、自定义新增类别（选择 icon 与颜色）、自定义类别彻底删除，以及在数据库中物理持久化，对已有历史交易记录具有完美兼容性。② **多语言翻译键全量修复**：彻底重写 `zh.json` / `en.json`（共 158 个键），修复之前多次 PowerShell `.NET` 拼接导致的 JSON 格式混乱（键挤在同一行、`category_mgmt` 被放在顶层 `}` 之外）；删除拼写错误键 `categrories`；补全代码中引用但 JSON 缺失的翻译键（`entry.select_date`、`stats.no_income_structure`、`stats.no_expense_structure`、`settings.categories`、`settings.currency` 等）；补全候选类别（`gift`/礼物、`sports`/运动、`fruit`/水果、`pet`/宠物、`snack`/零食、`medicine`/药品）的中英翻译键；确保中英文 158 个键 100% 完美对齐，通过 `npx expo export` 编译验证与真机 ADB 联调测试。 |
 | v1.0.5-publishing | 2026-06-03 | **配置 Google Play 发布与 OTA 热更新**：集成并配置 `expo-updates` 实现线上静默更新，配置 `eas.json` 的 `submit` 自动化发布设置，重命名 App 中文显示名称为“Vault离线记账”。新增了 [Publishing_Guide.md](file:///c:/Users/rhett/.gemini/antigravity/Vault/doc/Publishing_Guide.md) 作为生产上架与热更新的详尽实操指南，并提供可用于部署 GitHub Pages 的隐私协议 HTML 模板。 |
 | v1.0.3-android | 2026-05-30 | **新增 Android 打包与构建指南**：在 doc 目录下新增了 [Android_Build_Guide.md](file:///C:/Users/rhett/.gemini/antigravity/Vault/doc/Android_Build_Guide.md) 指南文档，对 Expo 云端 EAS 打包和本地离线 Gradle 构建两种路径进行了详细评估，并罗列了当前项目资源和权限的准备情况。正式交付并跑通首个 Android APK 的一键云构建！已在 Expo 云端安全托管 Android 原生签名密钥 (Keystore)，并在本地 doc/ 下物理更新交付了最终版 [Android_Build_Guide.md](file:///C:/Users/rhett/.gemini/antigravity/Vault/doc/Android_Build_Guide.md) 指南。用户可直接扫码下载和安装 APK 进行完美无暇的真机体验。 |
 | v1.0.4-currency | 2026-06-03 | **多国货币切换与日期格式微调**：支持在设置页自主切换货币类型，支持所有英语区国家货币（USD, GBP, CAD, AUD, NZD 等）的动态渲染；将英文语言下的图表日期显示格式统一为简化的 `MM/DD`。 |
 | v1.0.3-i18n | 2026-06-02 | **多语言支持与TypeScript修复**：完美支持中英双语版本，整合 `expo-localization` 与 `i18n-js` 实现系统默认自动适配与设置页手动切换；CSV 导出表头、文件名、以及全图表 labels 和 legend 完美跟随所选语言实时同步转换；清理了未使用的模板残留代码并修复了 `AmountDisplay` 和 `Skeleton` 的 TypeScript 编译类型隐患，达成 100% 完美无瑕编译发布标准！ |
 | v1.0.2-reactivity | 2026-05-17 | **修复反应性缺陷、消除分类切换闪烁、优化高度占比，并完成图表重构与横滚加粗大升级**：① 在 `app/_layout.tsx` 初始化阶段全局载入 SQLite 状态，将预算状态注入 `StatisticsView` 依赖；② 一次性并行拉取支出与收入占比数据，切换分类 Tab 实现零闪屏；③ Bento 卡片高度从 88px 精简压缩至 70px；④ **图表系统重构与细节打磨**：趋势图默认双折线绘制，支持点击数据点触发极精美全维度财务摘要 Tooltip 浮窗；收支结构图重写为按月/年时间轴滚动的“类别堆叠柱状柱形图”；⑤ **大版面横向滚动与 Y 轴压缩**：针对真机屏幕下“柱子细密、左侧留白过多、金额占宽”痛点，全量上线**“横向丝滑滑动机制”**（让月度/天度图表自动延展至宽幅，柱体厚实感大幅增加 `barPercentage: 0.85`），并使用 **`Y轴千位压缩(k格式)`** 技术（如 `15000` 压缩为 `15k`）消减左侧 65% 以上的无用占宽，右上角融合精致的“单位：元”标签；⑥ **横向滑动深度打磨（全画幅·悬浮Y轴系统）**：摒弃传统左侧外边距占位，首创**“图表曲线内侧·悬浮玻璃刻度数字”方案**（4等分极简刻度，支持 textShadow 文字投影防背景色干扰），**释放100%全画幅图表绘图宽度，折线与堆叠柱从屏幕左边缘完美舒展**，滑动时数据在悬浮数字下方穿梭滑过；同时引入 **`ScrollView 尺寸监听`**，在初次渲染及数据切换时**“瞬间秒级”**自动定位到最右侧最新的一期数据，打造殿堂级大屏触控手势财务体验！ |
+| v1.0.0-settings | 2026-05-17 | **完成 Session 6 与 Session 7：统计图表与设置页组件开发**。开发了 `CategoryRanking` 带有手风琴展开交易明细功能的分类排行列表，完善了 `BudgetDrawer` 带有自定义表达式计算键盘的底部预算设置抽屉，实现了 `ExportDrawer` 多时间维度的 CSV 数据导出功能，并在记账表单中集成了 `SmartChips` 备注智能推荐功能。补齐了设置页与统计页的全部子组件闭环。 |
+| v1.0.0-overview | 2026-05-17 | **完成 Session 5：概览页面开发（账本模式）**。实现 `app/(tabs)/index.tsx` 页面核心框架及 Tab 切换机制，完美集成 `AssetBentoGrid` 资产总结网格面板；开发具有悬浮 Header 效果的按日分组流水列表 `TransactionList`；基于 `react-native-gesture-handler` 构建丝滑 `TransactionItem`，支持右滑呼出删除操作及防误触二次确认，全面打通 `useTransactionStore` 数据下发与局部状态管理，补齐空白态引导及下拉刷新逻辑。 |
+| v1.0.0-entry | 2026-05-17 | **完成 Session 4：记账与编辑表单开发**。全新交付完整的记账与编辑流程！实现 `AmountDisplay`（B方案双行设计，结合 Reanimated 弹力缩放动效的大字金额与算式展示）、`NumericKeypad`（具备优秀触感反馈的数学表达式计算键盘）、`CategoryGrid`（果冻感微缩放动画网格类别选择器）以及核心页面控制器 `EntryForm`。实现 iOS 端高级毛玻璃 `BottomDrawer` 日期选择与 Android 原生自适应日期选择，以及高拟真“昨天/今天”快捷一键切换；完美打通了编辑模式数据的 SQLite 加载、修改更新及结合 Session 3 的 `ConfirmModal` 二次确认安全删除功能，融入了微秒级 `Haptics` 物理触控反馈。**本轮特别修复**：核验并确保了 `@react-native-community/datetimepicker` 在 `package.json` 中的物理写入，并**在 codebase 全局范围内完成了对所有 6 个非法使用 `Manrope-Medium` 和 3 个使用 `JetBrainsMono-Medium` 文件的字体别名清扫与物理载入字重对齐**，彻底清除了 Fallback 隐患，达成 100% 完美的视觉一致性。 |
+| v1.0.0-ui | 2026-05-17 | **完成 Session 3：导航框架与通用组件开发**。成功交付 `app/(tabs)/_layout.tsx`（集成 iOS BlurView/Android 高级半透明自适应的高端毛玻璃 TabBar，并拦截中间 Tab 唤起全屏 Modal）、`SegmentedControl`（结合 Reanimated spring 滑动弹簧物理回弹效果的分段选择器）、`BottomDrawer`（带淡入淡出遮罩与底部弹出物理动画的精美抽屉容器）、`ConfirmModal`（二次确认弹窗），并提前完成 settings 页面的 Drawer 联动及占位防错组件，全数消除了 TS 编译隐患。 |
+| v1.0.0-stores | 2026-05-17 | 完成 Session 2：状态管理与服务层开发。实现 `useSettingsStore`（预算/主题设置持久化）、`useTransactionStore`（交易 CRUD 状态管理）、`useStatsStore`（统计视图周期/导航/筛选）。开发 `BudgetService`（预算健康度分析）与高拟真度的 `MockDataService`（单条 SQLite 事务高效批量写入 180 天测试流水）。 |
+| v1.0.0-infra | 2026-05-17 | 完成 Session 1：补全项目基础设施。下载 Manrope 与 JetBrains Mono 字体，创建交易与统计类型定义，补全 SQLite 连接与 Schema 设计，统一分类常量，修复 `settings.tsx` 语法错误。 |
+| v0.9 | 2026-05-17 | 重启开发：审计代码实际状态，重整 Architecture.md 和 Migration_Plan.md，保留可用代码、重置迁移进度 |
+| v0.8 | 2026-05-17 | 新增 `Architecture.md`，确立 React Native (Expo SDK 54) + SQLite 跨平台技术栈，初始化 Expo 项目 |
 | v1.0.0-settings | 2026-05-17 | **完成 Session 6 与 Session 7：统计图表与设置页组件开发**。开发了 `CategoryRanking` 带有手风琴展开交易明细功能的分类排行列表，完善了 `BudgetDrawer` 带有自定义表达式计算键盘的底部预算设置抽屉，实现了 `ExportDrawer` 多时间维度的 CSV 数据导出功能，并在记账表单中集成了 `SmartChips` 备注智能推荐功能。补齐了设置页与统计页的全部子组件闭环。 |
 | v1.0.0-overview | 2026-05-17 | **完成 Session 5：概览页面开发（账本模式）**。实现 `app/(tabs)/index.tsx` 页面核心框架及 Tab 切换机制，完美集成 `AssetBentoGrid` 资产总结网格面板；开发具有悬浮 Header 效果的按日分组流水列表 `TransactionList`；基于 `react-native-gesture-handler` 构建丝滑 `TransactionItem`，支持右滑呼出删除操作及防误触二次确认，全面打通 `useTransactionStore` 数据下发与局部状态管理，补齐空白态引导及下拉刷新逻辑。 |
 | v1.0.0-entry | 2026-05-17 | **完成 Session 4：记账与编辑表单开发**。全新交付完整的记账与编辑流程！实现 `AmountDisplay`（B方案双行设计，结合 Reanimated 弹力缩放动效的大字金额与算式展示）、`NumericKeypad`（具备优秀触感反馈的数学表达式计算键盘）、`CategoryGrid`（果冻感微缩放动画网格类别选择器）以及核心页面控制器 `EntryForm`。实现 iOS 端高级毛玻璃 `BottomDrawer` 日期选择与 Android 原生自适应日期选择，以及高拟真“昨天/今天”快捷一键切换；完美打通了编辑模式数据的 SQLite 加载、修改更新及结合 Session 3 的 `ConfirmModal` 二次确认安全删除功能，融入了微秒级 `Haptics` 物理触控反馈。**本轮特别修复**：核验并确保了 `@react-native-community/datetimepicker` 在 `package.json` 中的物理写入，并**在 codebase 全局范围内完成了对所有 6 个非法使用 `Manrope-Medium` 和 3 个使用 `JetBrainsMono-Medium` 文件的字体别名清扫与物理载入字重对齐**，彻底清除了 Fallback 隐患，达成 100% 完美的视觉一致性。 |
@@ -89,3 +98,91 @@ Vault 是一款专为个人用户设计的离线记账应用。所有数据存�
 | v0.2 | 2026-01-10 | 统计模块初版 (图表/排行列表) |
 | v0.1 | 2026-01-07 | 基础记账功能 |
 
+
+## 常见问题与环境配置 (Troubleshooting)
+
+### Git 报错：`'remote-https' is not a git command`
+
+**问题现象**：
+在执行 `git push` 或其它 Git 网络操作时，命令行报以下错误：
+```
+git: 'remote-https' is not a git command. See 'git --help'.
+fatal: remote helper 'https' aborted session
+```
+
+**原因分析**：
+该问题表示本地 Git 的网络传输辅助程序丢失。经检测，您的 Git 安装目录 `D:\Software\Git\mingw64\libexec\git-core\` 下，除了 `git-remote-ftp.exe` 外，没有找到 `git-remote-http.exe` 和 `git-remote-https.exe`。这通常是因为：
+1. **杀毒软件误杀**：Windows Defender 或第三方杀毒软件在后台将该程序误判为威胁并自动隔离或删除。
+2. **Git 安装损坏**：此前的 Git 安装不完整或核心组件被意外损毁。
+
+**修复方案**：
+
+#### 方案一：使用 winget 强制覆盖重装（推荐）
+在您系统的 PowerShell 或 CMD（建议以**管理员身份**运行）中，执行以下命令，强制重新下载并覆盖安装 Git：
+```powershell
+winget install --id Git.Git --force
+```
+
+#### 方案二：前往官网手动下载覆盖安装
+直接访问 Git 官方下载页面 [Git for Windows](https://git-scm.com/download/win)，下载最新的 64-bit Git for Windows Setup 安装程序，运行并直接覆盖安装到 `D:\Software\Git`。
+
+#### 方案三：检查杀毒软件隔离历史
+1. 打开 Windows **“安全中心”** -> **“病毒和威胁防护”**。
+2. 点击 **“保护历史记录”**。
+3. 查找最近是否拦截了来自 Git 目录的 `git-remote-https.exe`。
+4. 如果有，点击它并选择 **“还原”**（或允许在设备上运行），并将该路径加入排除项，以防止后续再次被删。
+
+### Notion 桌面客户端启动闪退
+
+**问题现象**：
+双击 Notion 图标启动，显示窗口但未加载内容即立刻闪退。网页版正常，清理常规缓存和重装无效。
+
+**原因分析**：
+Notion Windows 客户端基于 Electron 架构，启动闪退通常由于以下原因：
+1. **本地 AppData 配置文件/缓存残留损坏**：常规卸载无法清除 `%APPDATA%\Notion` 目录下的用户配置文件。
+2. **GPU 硬件加速与显卡驱动冲突**：Electron 渲染器在启用 GPU 加速时由于显卡驱动、系统更新或双显卡切换产生致命错误崩溃。
+3. **微软 WebView2 Runtime 损坏**：底层渲染依赖的 WebView2 损坏或版本不匹配。
+
+**解决步骤**：
+
+#### 步骤一：彻底清除 AppData 残留数据
+1. 按下 `Win + R` 快捷键，输入 `%appdata%` 并回车。
+2. 在打开的目录中找到并彻底删除 `Notion` 文件夹。
+3. 再次按下 `Win + R`，输入 `%localappdata%` 并回车，删除 `Programs\Notion` 目录（如有）。
+4. 重新启动 Notion。
+
+#### 步骤二：禁用 GPU 硬件加速启动
+1. 使用快捷键 `Win + R` 打开运行窗口，输入 `cmd` 并回车。
+2. 在命令行中执行以下命令（以默认安装路径为例）：
+   ```cmd
+   "%USERPROFILE%\AppData\Local\Programs\Notion\Notion.exe" --disable-gpu
+   ```
+3. 若以此方式能成功启动且不闪退，说明是硬件加速冲突。
+4. 永久解决：右键 Notion 桌面快捷方式 -> **属性** -> 在**“目标”**输入框的最后面添加空格并加上参数 ` --disable-gpu`（例如：`"C:\Users\...\Notion.exe" --disable-gpu`），点击确定。
+
+#### 步骤三：使用 --no-sandbox 参数启动（针对崩溃代码 80000003）
+崩溃日志中的 `ExceptionCode: 80000003` (STATUS_BREAKPOINT) 通常是 Chromium/Electron 底层的沙盒 (Sandbox) 安全机制在 Windows 系统下初始化失败导致的断点崩溃。
+1. 使用快捷键 `Win + R` 打开运行窗口，输入 `cmd` 并回车。
+2. 在命令行中执行以下命令测试：
+   ```cmd
+   "%USERPROFILE%\AppData\Local\Programs\Notion\Notion.exe" --no-sandbox
+   ```
+3. 如果测试成功启动，可以在快捷方式的“目标”最后面添加 ` --no-sandbox`。
+
+#### 步骤四：修复 WebView2 运行时
+1. 前往微软官方网站下载并安装 **Microsoft Edge WebView2 运行时** (WebView2 Runtime) 安装包进行修复或重装。
+
+#### 步骤五：尝试以管理员权限或兼容模式运行
+1. 右键点击 Notion 快捷方式或 `Notion.exe`，选择 **以管理员身份运行**。
+2. 或者在 **属性 -> 兼容性** 选项卡中，尝试以 Windows 8 兼容模式运行。
+
+#### 步骤六：通过网页端唤起桌面客户端 (Protocol Handler)
+1. 在网页端登录 Notion，打开任意页面。
+2. 点击右上角的 `...` 菜单，选择 **“Open in Windows App”**。这会通过系统协议关联强行唤醒并初始化桌面端，有时可以绕过冷启动时的首屏闪退。
+
+#### 步骤七：获取与解析崩溃日志
+若以上均失效，可通过 Windows 事件查看器定位原因：
+1. 按下 `Win + X`，选择 **事件查看器**。
+2. 展开左侧的 **Windows 日志 -> 应用程序**。
+3. 查找发生闪退时间点的 **“错误 (Error)”** 日志（来源通常为 `Application Error` 或 `.NET Runtime`，对应程序为 `Notion.exe`）。
+4. 复制错误描述中的“错误模块名称”（例如某个 `.dll` 文件），可精确定位是显卡、杀毒软件拦截还是系统动态库问题。
