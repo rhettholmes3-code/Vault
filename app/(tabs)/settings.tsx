@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Switch, Alert, Linking } from 'react-native';
 import { useTheme } from '@/src/hooks/useTheme';
+import { router } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { GlassCard } from '@/src/components/common/GlassCard';
 import { BudgetDrawer } from '@/src/components/settings/BudgetDrawer';
@@ -142,6 +143,14 @@ export default function SettingsScreen() {
     {
       title: t('settings.preferences'),
       items: [
+        {
+          id: 'categories',
+          label: t('settings.categories'),
+          value: '',
+          icon: 'category',
+          color: '#f97316',
+          onPress: () => router.push('/category-management' as any)
+        },
         { 
           id: 'theme', 
           label: t('settings.theme'), 

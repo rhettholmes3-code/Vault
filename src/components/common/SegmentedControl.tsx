@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { useTheme } from '@/src/hooks/useTheme';
@@ -122,3 +122,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 });
+

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+﻿import React, { useEffect, useState, useMemo } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@/src/hooks/useTheme';
@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope-Bold',
   },
   filterSegmented: {
-    width: 160,
+    width: 190,
     height: 36,
   },
   placeholderContainer: {
@@ -150,3 +150,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+

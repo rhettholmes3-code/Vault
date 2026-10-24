@@ -14,8 +14,8 @@ export function NumericKeypad({ onPressNum, onPressOp, onPressBackspace }: Numer
   const { colors, isDark } = useTheme();
   const { height } = useWindowDimensions();
 
-  // Fine-tune keypad spacing according to screen size to prevent overlaps on smaller screens
-  const keyHeight = height < 700 ? 48 : 58;
+  // Keypad key height optimized for compact single-handed usage
+  const keyHeight = 44;
 
   const renderKey = (label: string, value: string, isOp: boolean = false) => {
     const handlePress = () => {
@@ -113,17 +113,17 @@ export function NumericKeypad({ onPressNum, onPressOp, onPressBackspace }: Numer
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 16,
-    paddingVertical: 10,
-    gap: 8,
+    paddingVertical: 4,
+    gap: 6,
     width: '100%',
   },
   row: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 6,
   },
   key: {
     flex: 1,
-    borderRadius: 16,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
@@ -134,6 +134,6 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   keyText: {
-    fontSize: 20,
+    fontSize: 19,
   },
 });

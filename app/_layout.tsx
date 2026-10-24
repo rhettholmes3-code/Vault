@@ -44,6 +44,10 @@ export default function RootLayout() {
         // 启动时预先载入 SQLite 设置到 Zustand 内存状态 (这会同步初始化 i18n)
         const { useSettingsStore } = await import('@/src/stores/useSettingsStore');
         await useSettingsStore.getState().fetchSettings();
+
+        // 启动时预载类别
+        const { useCategoryStore } = await import('@/src/stores/useCategoryStore');
+        await useCategoryStore.getState().initCategories();
       } catch (e) {
         console.warn('数据库初始化失败:', e);
       } finally {
@@ -76,13 +80,21 @@ function RootLayoutNav() {
           <Stack.Screen 
             name="add-entry" 
             options={{ 
-              presentation: 'fullScreenModal',
+              presentation: 'transparentModal',
               headerShown: false,
-              animation: 'slide_from_bottom',
+              animation: 'none',
             }} 
           />
           <Stack.Screen 
             name="edit-entry/[id]" 
+            options={{ 
+              presentation: 'transparentModal',
+              headerShown: false,
+              animation: 'none',
+            }} 
+          />
+          <Stack.Screen 
+            name="category-management" 
             options={{ 
               presentation: 'fullScreenModal',
               headerShown: false,

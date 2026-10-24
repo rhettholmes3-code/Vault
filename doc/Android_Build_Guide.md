@@ -139,3 +139,61 @@ npx expo install @sentry/react-native 安装 Sentry SDK。
 *   **更新内容**: 集成完整的 i18n-js 与 expo-localization 多语言支持，更新了全局 UI、时间选择器、设置及图表的本地化显示。
 *   **云端构建 ID**: e5bb876e-826a-4933-8bde-d23bc4258eb5 (模拟构建序列)
 *   **更新后构建**: 通过 EAS CLI 将已完成的多语言业务代码同步至云端，重新编译为最新版 APK 以更新真机体验。
+
+*   **最近更新构建 ID**: 4af8929f-01ab-4f4c-aa19-3004baca7da0 (2026-06-27 重新编译以解决历史链接过期问题)
+*   **最新编译 APK 官方下载链接**: [Vault v1.0.4-i18n-apk 重新编译版](https://expo.dev/accounts/rhettholmes/projects/vault/builds/4af8929f-01ab-4f4c-aa19-3004baca7da0)
+
+*   **当前最新功能版构建 ID**: e12e43b4-86b3-4a20-a51e-9457000078eb (2026-06-27 物理交付自定义类别及多语言排版热修)
+*   **最新整合 APK 官方下载链接**: [Vault v1.0.4-i18n-custom-categories 整合版](https://expo.dev/accounts/rhettholmes/projects/vault/builds/e12e43b4-86b3-4a20-a51e-9457000078eb)
+
+---
+
+## 7. 📱 本地真机联调 (Expo Go 调试指南)
+
+在日常使用 Expo Go 进行真机实时热重载调试时，如遇手机端无法连接或无法刷新：
+
+1. **服务确认**：确认本机 Metro 服务正常运行（监听端口 8081）。如遇服务停止，通过 
+px expo start -c 重启。
+2. **多网卡 IP 绑定**：若电脑存在虚拟网卡（如 WSL、VPN 等），需指定真机 Wi-Fi 网段 IP：
+   `powershell
+   $env:REACT_NATIVE_PACKAGER_HOSTNAME="192.168.31.98"; npx expo start -c
+   `
+3. **手机连接方式**：
+   - 保持手机与电脑连接同一 Wi-Fi。
+   - 在 Expo Go 中输入连接地址：exp://192.168.31.98:8081。
+   - 摇晃手机或三指长按调出 Expo 开发者菜单，点击 **Reload** 即可刷新获取最新代码。
+- **手机浏览器验证**：在手机浏览器访问 http://192.168.31.98:8081 若提示 Server Error（因网页端缺少 SQLite wasm 支持），实则说明局域网物理链路已完全通畅。
+- **推荐连接**：使用 Expo Go 首页的「Scan QR code」直接扫码最稳妥，避免「Enter URL manually」输入前缀重复问题。
+- **非交互式离线参数**：若项目 pp.json 中配置了 owner 且本地终端未登录 Expo 账号，在后台服务中启动 Metro 时需附带 --offline 参数（如 $env:REACT_NATIVE_PACKAGER_HOSTNAME="192.168.31.98"; npx expo start --offline），避免因触发交互式登录导致手机扫码返回 Something went wrong。
+
+---
+
+## 8. 🛡️ 数据安全与沙盒隔离说明 (Expo Go vs 独立 APK)
+
+- **系统沙盒绝对隔离**：手机桌面上独立安装的 **Vault APK**（包名 com.rhettholmes.vault）与 **Expo Go**（包名 host.exp.exponent）在 Android 底层是两个互不干扰的独立应用容器。
+- **数据不互通且绝对安全**：在独立 APK 中记录的所有真实历史账单，完整保存在独立 APK 的 SQLite 本地沙盒（ault.db）中，**绝对不会因为 Expo Go 调试而丢失或被覆盖**。
+- **无损覆盖升级**：在 Expo Go 中验证满意的新功能，只需通过 EAS 云端重新打包生成最新 APK，直接在手机上**覆盖安装**即可无损继承所有历史记账数据！
+
+---
+
+## 9. 🚀 v1.0.5 生产构建实操与数据无损升级指南 (2026-06-28)
+
+本次构建核心升级点：
+1. **记账与修改页面布局优化**：输入控制面板紧凑化，数字键盘高度统一为 44px（单手可自如按到所有数字及运算符），类别网格行间距压缩至 12px，界面完整展示至少 3 行类别图标。
+2. **平滑关闭转场动效**：全屏弹窗基于 Reanimated 原生贝塞尔曲线实现 240ms 向下滑出关闭，保存与删除操作在退出后异步写入 SQLite 数据库，彻底避免掉帧丢帧。
+3. **版本号与升级策略**：版本号升级为 1.0.5，ersionCode 递增为 5，确保 Android 系统触发标准的无损升级机制。
+
+### 📦 云端打包执行步骤：
+在电脑本地终端中执行以下命令：
+`ash
+# 1. 登录 Expo 账号 (若尚未登录)
+eas login
+
+# 2. 一键发起云端 APK 编译
+eas build --platform android --profile preview
+`
+
+### ⚠️ 数据 100% 保留的关键操作要点：
+1. **千万不要卸载手机上的旧版 App**：Android 系统在应用卸载时会物理删除内部数据目录。只要不卸载，数据永远安然无恙。
+2. **直接点击新 APK 覆盖安装**：下载构建完成的 APK 文件后直接打开，系统会弹出提示：**「是否要安装此应用的更新？您的现有数据不会丢失」**。
+3. **点击确认安装**：安装完成后打开应用，原有的所有历史账单、资产统计和设置均完整无损保留，并立即拥有全新的 3 行类别与平滑退出动效！

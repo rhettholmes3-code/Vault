@@ -65,20 +65,20 @@ export function AmountDisplay({ expression, displayAmount, type }: AmountDisplay
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 28,
-    paddingVertical: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 6,
     alignItems: 'flex-end',
     justifyContent: 'center',
-    minHeight: 110,
+    minHeight: 64,
     width: '100%',
   },
   expressionContainer: {
-    height: 24,
+    height: 18,
     justifyContent: 'center',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   expressionText: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: 'JetBrainsMono',
     letterSpacing: 0.5,
   },
@@ -89,13 +89,13 @@ const styles = StyleSheet.create({
     maxWidth: '100%',
   },
   currencySymbol: {
-    fontSize: 28,
+    fontSize: 22,
     fontFamily: 'Manrope-Regular',
-    marginRight: 6,
+    marginRight: 4,
     bottom: 2, // Fine-tune alignment with typography baseline
   },
   amountText: {
-    fontSize: 52,
+    fontSize: 38,
     fontFamily: 'JetBrainsMono',
     fontWeight: 'bold',
     letterSpacing: -1,

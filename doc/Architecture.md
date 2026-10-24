@@ -179,6 +179,21 @@ CREATE TABLE IF NOT EXISTS settings (
   key   TEXT PRIMARY KEY,
   value TEXT
 );
+
+-- Categories table to support custom expenses/incomes categories, drag-and-drop ordering, and toggling active status
+CREATE TABLE IF NOT EXISTS categories (
+  id          TEXT NOT NULL,              -- Category ID (e.g., 'food', 'custom_123')
+  type        TEXT NOT NULL,              -- 'expense' | 'income'
+  name        TEXT NOT NULL,              -- Display name (custom string or preset translation key)
+  icon        TEXT NOT NULL,              -- MaterialIcons name
+  color       TEXT NOT NULL,              -- HEX primary color
+  bg          TEXT NOT NULL,              -- HEX light-mode background tint
+  is_active   INTEGER NOT NULL DEFAULT 1, -- 1 = active (shown in grid), 0 = candidate (hidden)
+  is_custom   INTEGER NOT NULL DEFAULT 0, -- 1 = user custom, 0 = system preset
+  sort_order  INTEGER NOT NULL DEFAULT 0, -- sorting order rank
+  created_at  INTEGER NOT NULL,           -- creation millisecond timestamp
+  PRIMARY KEY (id, type)
+);
 ```
 
 ### 4.2 常用查询示例
@@ -275,5 +290,6 @@ ORDER BY total DESC;
 
 | 版本 | 日期 | 更新内容 |
 |------|------|----------|
+| v1.2 | 2026-06-27 | 新增类别自定义功能支持，包括 SQLite 表结构 categories 设计、useCategoryStore 状态控制及 reorder/active 逻辑。 |
 | v1.0 | 2026-05-17 | 初始版本：确立 React Native + Expo + SQLite 技术栈 |
 | v1.1 | 2026-05-17 | 重整文档：移除与 Migration_Plan 重复的 Phase 规划，纯化为架构设计文档；更新目录结构反映实际项目布局 |

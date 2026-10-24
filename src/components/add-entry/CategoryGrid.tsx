@@ -2,7 +2,8 @@ import React from 'react';
 import { StyleSheet, View, Text, Pressable } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, withSequence } from 'react-native-reanimated';
 import { MaterialIcons } from '@expo/vector-icons';
-import { CATEGORIES, CategoryInfo } from '@/src/constants/categories';
+import { CategoryInfo } from '@/src/constants/categories';
+import { useCategoryStore } from '@/src/stores/useCategoryStore';
 import { TransactionType } from '@/src/types/transaction';
 import { useTheme } from '@/src/hooks/useTheme';
 import { t } from '@/src/constants/i18n';
@@ -14,7 +15,18 @@ interface CategoryGridProps {
 }
 
 export function CategoryGrid({ type, selectedId, onSelect }: CategoryGridProps) {
-  const categoriesList = Object.values(CATEGORIES[type]);
+  const rawCategories = useCategoryStore((state) => 
+    type === 'expense' ? state.expenseCategories : state.incomeCategories
+  );
+
+  const categoriesList = React.useMemo(() => {
+    return rawCategories
+      .filter((c) => c.is_active === 1)
+      .map((c) => ({
+        ...c,
+        name: c.is_custom === 1 ? c.name : t('category.' + c.id)
+      }));
+  }, [rawCategories, type]);
 
   return (
     <View style={styles.gridContainer}>
@@ -100,7 +112,7 @@ function CategoryItem({ category, isSelected, onSelect }: CategoryItemProps) {
         >
           <MaterialIcons 
             name={category.icon as any} 
-            size={22} 
+            size={20} 
             color={getIconColor()} 
           />
         </View>
@@ -116,7 +128,7 @@ function CategoryItem({ category, isSelected, onSelect }: CategoryItemProps) {
             }
           ]}
         >
-          {t('category.' + category.id)}
+          {category.name}
         </Text>
       </Animated.View>
     </Pressable>
@@ -128,7 +140,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     width: '100%',
-    rowGap: 18,
+    rowGap: 12,
     paddingHorizontal: 8,
   },
   itemWrapper: {
@@ -140,12 +152,12 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   label: {
     fontSize: 11,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   StyleSheet, 
   View, 
@@ -8,8 +8,17 @@ import {
   ScrollView, 
   KeyboardAvoidingView, 
   Platform, 
-  StatusBar
+  StatusBar,
+  BackHandler,
+  useWindowDimensions
 } from 'react-native';
+import Animated, { 
+  useSharedValue, 
+  useAnimatedStyle, 
+  withTiming, 
+  Easing, 
+  runOnJS 
+} from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
@@ -19,7 +28,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTheme } from '@/src/hooks/useTheme';
 import { COLORS } from '@/src/constants/Colors';
 import { TransactionType } from '@/src/types/transaction';
-import { CATEGORIES } from '@/src/constants/categories';
+import { useCategoryStore } from '@/src/stores/useCategoryStore';
 import { evaluateExpression } from '@/src/utils/numberUtils';
 import { formatToSqlDate, isYesterday, toDate, formatDate } from '@/src/utils/dateUtils';
 import { useTransactionStore } from '@/src/stores/useTransactionStore';
@@ -63,6 +72,60 @@ export function EntryForm({ id }: EntryFormProps) {
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
 
+  // Smooth slide up/down animation states
+  const { height: screenHeight } = useWindowDimensions();
+  const translateY = useSharedValue(screenHeight);
+  const isClosingRef = useRef(false);
+
+  // Entrance animation: slide up smoothly on mount
+  useEffect(() => {
+    translateY.value = withTiming(0, {
+      duration: 280,
+      easing: Easing.bezier(0.16, 1, 0.3, 1),
+    });
+  }, []);
+
+  const animatedContainerStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
+
+  // Smooth dismiss handler
+  const dismissModal = (afterAnimation?: () => void) => {
+    if (isClosingRef.current) return;
+    isClosingRef.current = true;
+
+    translateY.value = withTiming(screenHeight, {
+      duration: 240,
+      easing: Easing.bezier(0.25, 1, 0.5, 1),
+    }, (finished) => {
+      if (finished) {
+        runOnJS(router.back)();
+        if (afterAnimation) {
+          runOnJS(afterAnimation)();
+        }
+      }
+    });
+  };
+
+  // Intercept Android hardware back button for smooth slide-down
+  useEffect(() => {
+    const backAction = () => {
+      if (showDeleteConfirm) {
+        setShowDeleteConfirm(false);
+        return true;
+      }
+      if (showDatePicker) {
+        setShowDatePicker(false);
+        return true;
+      }
+      dismissModal();
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
+    return () => backHandler.remove();
+  }, [showDeleteConfirm, showDatePicker]);
+
   // Initialize values on mount or when editingTx loads
   useEffect(() => {
     if (editingTx) {
@@ -72,16 +135,20 @@ export function EntryForm({ id }: EntryFormProps) {
       setCurrentDate(toDate(editingTx.date));
       setNote(editingTx.note || '');
     } else {
-      // Create mode default: select first expense category
-      setSelectedCategory(Object.keys(CATEGORIES.expense)[0]);
+      // Create mode default: select first active expense category
+      const activeCats = useCategoryStore.getState().getActiveCategories('expense');
+      if (activeCats.length > 0) {
+        setSelectedCategory(activeCats[0].id);
+      }
     }
   }, [editingTx]);
 
   // Auto-switch selected category if active type doesn't contain it
   useEffect(() => {
-    const validCats = Object.keys(CATEGORIES[type]);
-    if (!validCats.includes(selectedCategory)) {
-      setSelectedCategory(validCats[0]);
+    const activeCats = useCategoryStore.getState().getActiveCategories(type);
+    const validCatIds = activeCats.map((c) => c.id);
+    if (!validCatIds.includes(selectedCategory) && activeCats.length > 0) {
+      setSelectedCategory(activeCats[0].id);
     }
   }, [type]);
 
@@ -196,59 +263,57 @@ export function EntryForm({ id }: EntryFormProps) {
   };
 
   // Save logic
-  const handleSave = async () => {
-    if (!validAmount) return;
+  const handleSave = () => {
+    if (!validAmount || isClosingRef.current) return;
     
     triggerHaptic(Haptics.ImpactFeedbackStyle.Medium);
-    
     const formattedDate = formatToSqlDate(currentDate);
-    
-    try {
-      if (id) {
-        // Edit Mode Update
-        await updateTransaction(id, {
-          type,
-          amount: finalValue,
-          category: selectedCategory,
-          date: formattedDate,
-          note: note.trim()
-        });
-      } else {
-        // Create Mode Add
-        await addTransaction({
-          type,
-          amount: finalValue,
-          category: selectedCategory,
-          date: formattedDate,
-          note: note.trim()
-        });
+    const payload = {
+      type,
+      amount: finalValue,
+      category: selectedCategory,
+      date: formattedDate,
+      note: note.trim()
+    };
+
+    // Smooth exit immediately while saving in background
+    dismissModal(async () => {
+      try {
+        if (id) {
+          // Edit Mode Update
+          await updateTransaction(id, payload);
+        } else {
+          // Create Mode Add
+          await addTransaction(payload);
+        }
+      } catch (e) {
+        console.error('Failed to save transaction:', e);
       }
-      router.back();
-    } catch (e) {
-      console.error('Failed to save transaction:', e);
-    }
+    });
   };
 
   // Delete logic
-  const handleDelete = async () => {
-    if (!id) return;
+  const handleDelete = () => {
+    if (!id || isClosingRef.current) return;
     
     setShowDeleteConfirm(false);
     triggerHaptic(Haptics.ImpactFeedbackStyle.Heavy);
     
-    try {
-      await deleteTransaction(id);
-      router.back();
-    } catch (e) {
-      console.error('Failed to delete transaction:', e);
-    }
+    dismissModal(async () => {
+      try {
+        await deleteTransaction(id);
+      } catch (e) {
+        console.error('Failed to delete transaction:', e);
+      }
+    });
   };
 
   return (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined} 
-      style={[styles.container, { backgroundColor: colors.background }]}
-    >
+    <Animated.View style={[{ flex: 1 }, animatedContainerStyle]}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined} 
+        style={[styles.container, { backgroundColor: colors.background }]}
+      >
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
       <SafeAreaView style={styles.safeArea}>
         
@@ -366,7 +431,7 @@ export function EntryForm({ id }: EntryFormProps) {
             <TouchableOpacity 
               onPress={() => {
                 triggerHaptic();
-                router.back();
+                dismissModal();
               }}
               style={[styles.actionBtn, styles.cancelBtn, { borderColor: colors.border }]}
               activeOpacity={0.7}
@@ -473,6 +538,7 @@ export function EntryForm({ id }: EntryFormProps) {
 
       </SafeAreaView>
     </KeyboardAvoidingView>
+  </Animated.View>
   );
 }
 
@@ -486,7 +552,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'center',
-    paddingVertical: 14,
+    paddingVertical: 8,
     paddingHorizontal: 24,
     zIndex: 10,
   },
@@ -498,30 +564,30 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingVertical: 12,
-    paddingBottom: 24,
+    paddingVertical: 6,
+    paddingBottom: 12,
   },
   bottomPanel: {
     borderTopWidth: 1,
-    borderTopLeftRadius: 36,
-    borderTopRightRadius: 36,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: -6 },
+    shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.05,
-    shadowRadius: 15,
+    shadowRadius: 12,
     elevation: 8,
   },
   inputBarWrapper: {
     paddingHorizontal: 16,
-    paddingVertical: 6,
+    paddingVertical: 3,
   },
   inputBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 24,
-    paddingHorizontal: 14,
-    paddingVertical: 4,
-    height: 44,
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 2,
+    height: 38,
   },
   dateSelector: {
     flexDirection: 'row',
@@ -561,13 +627,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
     paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 16,
+    paddingTop: 4,
+    paddingBottom: 8,
   },
   actionBtn: {
     flex: 1,
-    height: 48,
-    borderRadius: 16,
+    height: 40,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -575,9 +641,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   submitBtn: {
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.15,
-    shadowRadius: 8,
+    shadowRadius: 6,
     elevation: 3,
   },
   actionBtnText: {
@@ -589,9 +655,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: 6,
-    paddingVertical: 14,
+    paddingVertical: 8,
     borderTopWidth: 1,
-    marginTop: 4,
+    marginTop: 2,
   },
   deleteBtnText: {
     fontSize: 14,

@@ -2,7 +2,7 @@
   "expo": {
     "name": "Vault离线记账",
     "slug": "vault",
-    "version": "1.0.0",
+    "version": "1.0.5",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "vault",
@@ -27,6 +27,7 @@
     },
     "android": {
       "package": "com.rhettholmes.vault",
+      "versionCode": 5,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
