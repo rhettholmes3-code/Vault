@@ -197,3 +197,6 @@ eas build --platform android --profile preview
 1. **千万不要卸载手机上的旧版 App**：Android 系统在应用卸载时会物理删除内部数据目录。只要不卸载，数据永远安然无恙。
 2. **直接点击新 APK 覆盖安装**：下载构建完成的 APK 文件后直接打开，系统会弹出提示：**「是否要安装此应用的更新？您的现有数据不会丢失」**。
 3. **点击确认安装**：安装完成后打开应用，原有的所有历史账单、资产统计和设置均完整无损保留，并立即拥有全新的 3 行类别与平滑退出动效！
+- **本次构建看板及官方下载页面**: [Vault v1.0.5 构建实时看板 (Build ID: fa99eb37-5dcf-4bef-a140-db5fb1b01127)](https://expo.dev/accounts/rhettholmes/projects/vault/builds/fa99eb37-5dcf-4bef-a140-db5fb1b01127)
+- **构建结果**: ✅ 云端打包成功完成 (Build ID: a99eb37-5dcf-4bef-a140-db5fb1b01127)
+- **最终官方 APK 下载与安装链接**: [Vault v1.0.5 官方安装页面](https://expo.dev/accounts/rhettholmes/projects/vault/builds/fa99eb37-5dcf-4bef-a140-db5fb1b01127)
