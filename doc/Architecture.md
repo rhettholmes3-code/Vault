@@ -286,10 +286,44 @@ ORDER BY total DESC;
 
 ---
 
-## 9. 更新日志
+## 9. 全局研发指引与多语言 (i18n) 铁律
+
+为保证 Vault 长期版本迭代的**高稳定性、可恢复性、可追溯性与全球化体验**，项目开发必须严格遵守以下工程规范：
+
+### 9.1 多语言 (i18n) 全局铁律
+1. **零硬编码字符串**：任何新增的 UI 文案、按钮标签、Toast/Alert 提示、通知栏推送标题与正文、备份/恢复进度与确认弹窗等，严禁直接在代码中编写中文字符串或英文字符串。
+2. **双语 100% 同步对齐**：所有新增文案必须同时在 `src/constants/locales/zh.json` 和 `src/constants/locales/en.json` 中声明相同的键（Key）。提测或构建前需通过自动扫描脚本或 TypeScript 校验，杜绝任何缺失或遗漏。
+3. **参数化模板支持**：对于带动态数据的文案（如金额、类别名、记账条数、结余等），统一使用 i18n 插值占位符，例如：
+   - `notification.weekly_summary`: "上周总支出 ¥%{amount}，其中【%{category}】开销最高。新的一周加油！"
+   - `notification.weekly_summary_en`: "Last week's total expense was %{currency}%{amount}, with %{category} being the highest. Have a great week!"
+
+### 9.2 v1.1 架构扩展：通知与数据安全系统
+
+#### A. 本地智能提醒与周期分析系统 (`services/NotificationService.ts`)
+- **完全离线调度**：采用 `expo-notifications` 注册本地定时计划通知（Local Scheduled Notifications），设备不联网亦可精准触发，严守隐私底线。
+- **调度模块职责**：
+  1. `scheduleDailyReminders()`: 每天 12:30（午餐提醒）与 21:30（晚间复盘）。
+  2. `checkDailyStatusAndFormat()`: 若当日已记过账，晚间触发温和复盘文案（"今天已记 %{count} 笔账，看看是否还有遗漏的开销 🌙"）。
+  3. `scheduleWeeklyReport()`: 每周一 09:00 分析上周 SQLite 数据，汇总金额与 TOP1 类别。
+  4. `scheduleMonthlyReport()`: 每月 1 号 09:30 分析上月支出总额与预算结余。
+- **权限与状态管理**：配置状态持久化在 `useSettingsStore` 中，初次开启主动请求系统通知权限。
+
+#### B. 可追溯、可恢复的全量数据备份与灾备系统 (`services/BackupService.ts`)
+- **可追溯数据协议 (`Schema v1`)**：
+  - 结构包含：`schemaVersion: 1`、`metadata`（时间戳、App版本、条数、收支 Checksum）、`settings`（偏好/预算/通知）、`categories`（物理分类定义）、`transactions`（全量流水）。
+- **零破坏原子还原流程**：
+  1. **安全自动快照 (Safety Auto-Snapshot)**：在执行覆盖导入前，系统自动在本地沙盒持久化一份 `auto_safety_snapshot.json`，用户若误选文件可随时一键安全撤销还原。
+  2. **校验与审计预览**：解析拾取的 JSON，核验 Checksum 与 Schema 版本，弹出审计确认框（包含笔数、金额、备份生成时间）。
+  3. **SQLite 原子事务写入**：在单个 Database Transaction 中执行数据清理与重新灌装，若中途发生任何异常自动 `ROLLBACK`，旧数据毫发无损。
+- **文件交互**：利用 `expo-sharing` 调起原生系统分享，利用 `expo-document-picker` 拾取备份文件。
+
+---
+
+## 10. 更新日志
 
 | 版本 | 日期 | 更新内容 |
 |------|------|----------|
+| v1.1.0-spec | 2026-10-25 | 确立 v1.1 架构设计规范：建立全局 i18n 铁律、本地离线智能提醒机制、以及带自动快照与原子事务的可追溯数据备份系统。 |
 | v1.2 | 2026-06-27 | 新增类别自定义功能支持，包括 SQLite 表结构 categories 设计、useCategoryStore 状态控制及 reorder/active 逻辑。 |
 | v1.0 | 2026-05-17 | 初始版本：确立 React Native + Expo + SQLite 技术栈 |
 | v1.1 | 2026-05-17 | 重整文档：移除与 Migration_Plan 重复的 Phase 规划，纯化为架构设计文档；更新目录结构反映实际项目布局 |
