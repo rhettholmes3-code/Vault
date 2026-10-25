@@ -82,14 +82,20 @@ eas build --platform android --profile preview
 
 ---
 
-## 4. 🎉 历史首版 APK 构建成功记录 (2026-05-30)
+## 4. 🎉 生产版 APK 构建历史记录
 
-项目历史上的首个 Android APK 独立安装包已于 **2026-05-30** 成功构建并发布！
+### v1.1.0 生产版 APK (2026-10-25)
+*   **构建任务 ID**: `23ea142c-895d-4f95-b937-70b951c6477c`
+*   **版本号**: `v1.1.0` (versionCode: `6`)
+*   **构建类型**: `preview` (独立 APK，支持无损覆盖升级)
+*   **APK 直接下载直链**: [点击下载 Vault v1.1.0 APK](https://expo.dev/artifacts/eas/7nMrxPDq3C5ipME9ro7wALZ28_-eRX6ZFjh3WZoEiUk.apk)
+*   **EAS 官方详情与二维码页面**: [Vault v1.1.0 EAS 详情页](https://expo.dev/accounts/rhettholmes/projects/vault/builds/23ea142c-895d-4f95-b937-70b951c6477c)
+*   **重要特性**: 包含 100% 离线智能提醒与周月支出总结、遵循 Schema v1 的全量数据备份/恢复与自动安全快照、设置页层级两级重构、零硬编码多语言及 454 项全自动化测试门禁通过。
 
-*   **项目关联 ID**: 827d73b-4fb2-4bb9-b4cd-b14c141aeb46
-*   **首版构建 ID**: 9acb59d2-0909-4e15-99f1-9e91e01458fc
+### v1.0.3 历史首版 APK (2026-05-30)
+*   **首版构建 ID**: `9acb59d2-0909-4e15-99f1-9e91e01458fc`
 *   **首版 APK 官方下载安装地址**: [Vault v1.0.3-android APK 下载通道](https://expo.dev/accounts/rhettholmes/projects/vault/builds/9acb59d2-0909-4e15-99f1-9e91e01458fc)
-*   **证书托管**: 签名证书 (Android Keystore) 已成功托管在 Expo 云端。后续如需再次构建，可直接自动复用该签名，保证应用可进行覆盖式平滑更新。
+*   **证书托管**: 签名证书 (Android Keystore) 已成功托管在 Expo 云端。所有后续版本均复用该统一签名，确保直接覆盖安装无损保留本地真实数据。
 
 ---
 
