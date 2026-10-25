@@ -32,6 +32,8 @@ import { useCategoryStore } from '@/src/stores/useCategoryStore';
 import { evaluateExpression } from '@/src/utils/numberUtils';
 import { formatToSqlDate, isYesterday, toDate, formatDate } from '@/src/utils/dateUtils';
 import { useTransactionStore } from '@/src/stores/useTransactionStore';
+import { useSettingsStore } from '@/src/stores/useSettingsStore';
+import { NotificationService } from '@/src/services/NotificationService';
 import { t } from '@/src/constants/i18n';
 
 // Common Components
@@ -285,6 +287,12 @@ export function EntryForm({ id }: EntryFormProps) {
         } else {
           // Create Mode Add
           await addTransaction(payload);
+        }
+
+        // 若启用了每日提醒，记账后动态刷新今晚提醒文案
+        const settings = useSettingsStore.getState();
+        if (settings.dailyReminderEnabled) {
+          NotificationService.scheduleDailyReminders().catch(() => {});
         }
       } catch (e) {
         console.error('Failed to save transaction:', e);

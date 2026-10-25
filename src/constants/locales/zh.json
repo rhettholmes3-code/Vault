@@ -1,4 +1,4 @@
-﻿{
+{
   "category": {
     "food": "餐饮",
     "transport": "交通",
@@ -139,7 +139,15 @@
     "export_last_month": "上月",
     "export_this_year": "本年",
     "export_last_year": "去年",
-    "export_all": "全部"
+    "export_all": "全部",
+    "reminders": "智能提醒",
+    "reminders_desc": "每日定时记账提醒与周月支出总结",
+    "daily_reminder": "每日记账提醒",
+    "daily_reminder_desc": "每天 12:30 与 21:30 推送记账提醒",
+    "periodic_summary": "周/月支出总结",
+    "periodic_summary_desc": "每周一 09:00 与每月 1 号 09:30 总结支出",
+    "backup_title": "数据安全与备份",
+    "backup_desc": "全量数据备份、恢复与快照防护"
   },
   "csv": {
     "date": "日期",
@@ -172,5 +180,51 @@
     "toast_duplicate_name": "该类别名称已存在",
     "toast_success": "创建成功",
     "toast_too_long": "类别名称不能超过4个字"
+  },
+  "notifications": {
+    "prompt_title": "开启记账提醒",
+    "prompt_desc": "开启定时提醒，帮助您养成每日记账习惯，不错过每一笔开销与周月收支复盘。",
+    "prompt_enable": "立即开启",
+    "prompt_skip": "暂不需要",
+    "permission_denied_title": "需要通知权限",
+    "permission_denied_desc": "请在手机系统设置中允许 Vault 发送通知，以便准时收到记账与复盘提醒。",
+    "go_to_settings": "前往设置",
+    "cancel": "取消",
+    "channel_reminders_name": "记账提醒",
+    "channel_reminders_desc": "每日记账提醒与周月支出总结",
+    "lunch_title": "记账提醒 🍱",
+    "lunch_body": "该记午饭啦！记录一笔午间开支吧",
+    "evening_title": "晚间记账 🌙",
+    "evening_body_zero": "今天辛苦啦！复盘一下今天的开销吧 🌙",
+    "evening_body_done": "今天已记 %{count} 笔账，看看是否还有遗漏的开销 🌙",
+    "weekly_title": "上周支出总结 📊",
+    "weekly_body": "上周总支出 %{currency}%{amount}，其中【%{category}】开销最高。新的一周加油！",
+    "weekly_body_none": "上周没有记录任何支出，新的一周继续保持好习惯！",
+    "monthly_title": "上月财务月报 📈",
+    "monthly_body_budget": "上月总支出 %{currency}%{amount}，预算结余 %{currency}%{balance}。点击查看完整月报",
+    "monthly_body_over": "上月总支出 %{currency}%{amount}，超出预算 %{currency}%{balance}。点击查看完整月报",
+    "monthly_body_no_budget": "上月总支出 %{currency}%{amount}。点击查看完整月报"
+  },
+  "backup": {
+    "card_title": "数据安全与备份",
+    "card_desc": "全量数据备份、恢复与快照防护",
+    "export_btn": "导出全量备份 (JSON)",
+    "export_desc": "将交易记录、类别配置和设置导出为备份文件",
+    "import_btn": "导入并恢复数据",
+    "import_desc": "从备份文件恢复数据，导入前自动生成安全快照",
+    "rollback_btn": "撤回上一次导入",
+    "rollback_desc": "还原至最近一次覆盖导入前的临时快照状态",
+    "export_success": "备份文件导出成功",
+    "export_fail": "导出备份失败: %{error}",
+    "no_snapshot": "暂无可撤销的安全快照",
+    "confirm_restore_title": "确认恢复备份数据",
+    "confirm_restore_desc": "备份时间：%{date}\n记录笔数：%{count} 笔\n总支出：%{currency}%{expense}\n总收入：%{currency}%{income}\n\n⚠️ 恢复将完全覆盖现有数据，导入前系统已自动生成安全快照可随时撤销。确定要继续吗？",
+    "restore_success": "数据已成功恢复！",
+    "restore_fail": "导入恢复失败: %{error}",
+    "rollback_confirm_title": "撤回导入确认",
+    "rollback_confirm_desc": "确定要撤回上一次导入并还原到导入前的状态吗？",
+    "rollback_success": "已成功撤回并还原到导入前状态！",
+    "rollback_fail": "撤回失败: %{error}",
+    "invalid_file": "选择的文件不是合法的 Vault 备份文件"
   }
 }

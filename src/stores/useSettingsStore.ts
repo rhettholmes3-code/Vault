@@ -35,23 +35,32 @@ interface SettingsState {
   themePreference: 'light' | 'dark' | 'auto';
   languagePreference: 'auto' | 'zh' | 'en';
   currencyPreference: CurrencyType;
+  dailyReminderEnabled: boolean;
+  periodicSummaryEnabled: boolean;
+  hasPromptedNotification: boolean;
   fetchSettings: () => Promise<void>;
   setMonthlyBudget: (budget: number) => Promise<void>;
   setThemePreference: (pref: 'light' | 'dark' | 'auto') => Promise<void>;
   setLanguagePreference: (pref: 'auto' | 'zh' | 'en') => Promise<void>;
   setCurrencyPreference: (pref: CurrencyType) => Promise<void>;
+  setDailyReminderEnabled: (enabled: boolean) => Promise<void>;
+  setPeriodicSummaryEnabled: (enabled: boolean) => Promise<void>;
+  setHasPromptedNotification: (prompted: boolean) => Promise<void>;
   getCurrencySymbol: () => string;
 }
 
 /**
  * 全局设置状态管理 Store (Zustand)
- * 提供每月预算、主题偏好、语言设置和货币设置的内存状态与 SQLite 持久化同步能力
+ * 提供每月预算、主题偏好、语言设置、货币设置以及通知提醒配置的内存状态与 SQLite 持久化同步能力
  */
 export const useSettingsStore = create<SettingsState>((set, get) => ({
   monthlyBudget: 5000,
   themePreference: 'auto',
   languagePreference: 'auto',
   currencyPreference: 'auto',
+  dailyReminderEnabled: false,
+  periodicSummaryEnabled: false,
+  hasPromptedNotification: false,
   
   fetchSettings: async () => {
     try {
@@ -60,11 +69,17 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       const themeRes = await db.getFirstAsync<{ value: string }>(QUERIES.GET_SETTING, ['theme_preference']);
       const langRes = await db.getFirstAsync<{ value: string }>(QUERIES.GET_SETTING, ['language_preference']);
       const currencyRes = await db.getFirstAsync<{ value: string }>(QUERIES.GET_SETTING, ['currency_preference']);
+      const dailyRemRes = await db.getFirstAsync<{ value: string }>(QUERIES.GET_SETTING, ['daily_reminder_enabled']);
+      const periodicRes = await db.getFirstAsync<{ value: string }>(QUERIES.GET_SETTING, ['periodic_summary_enabled']);
+      const promptedRes = await db.getFirstAsync<{ value: string }>(QUERIES.GET_SETTING, ['has_prompted_notification']);
 
       let monthlyBudget = 5000;
       let themePreference: 'light' | 'dark' | 'auto' = 'auto';
       let languagePreference: 'auto' | 'zh' | 'en' = 'auto';
       let currencyPreference: CurrencyType = 'auto';
+      let dailyReminderEnabled = false;
+      let periodicSummaryEnabled = false;
+      let hasPromptedNotification = false;
 
       if (budgetRes) {
         monthlyBudget = parseFloat(budgetRes.value) || 5000;
@@ -90,6 +105,18 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         await db.runAsync(QUERIES.UPSERT_SETTING, ['currency_preference', 'auto']);
       }
 
+      if (dailyRemRes) {
+        dailyReminderEnabled = dailyRemRes.value === '1';
+      }
+
+      if (periodicRes) {
+        periodicSummaryEnabled = periodicRes.value === '1';
+      }
+
+      if (promptedRes) {
+        hasPromptedNotification = promptedRes.value === '1';
+      }
+
       // 应用语言设置到全局 i18n
       if (languagePreference === 'auto') {
         i18n.locale = getDeviceLanguage();
@@ -97,7 +124,15 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         i18n.locale = languagePreference;
       }
 
-      set({ monthlyBudget, themePreference, languagePreference, currencyPreference });
+      set({
+        monthlyBudget,
+        themePreference,
+        languagePreference,
+        currencyPreference,
+        dailyReminderEnabled,
+        periodicSummaryEnabled,
+        hasPromptedNotification,
+      });
     } catch (e) {
       console.error('[SettingsStore] 获取配置失败:', e);
     }
@@ -148,6 +183,36 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       set({ currencyPreference: pref });
     } catch (e) {
       console.error('[SettingsStore] 更新货币偏好失败:', e);
+    }
+  },
+
+  setDailyReminderEnabled: async (enabled: boolean) => {
+    try {
+      const db = await getDatabase();
+      await db.runAsync(QUERIES.UPSERT_SETTING, ['daily_reminder_enabled', enabled ? '1' : '0']);
+      set({ dailyReminderEnabled: enabled });
+    } catch (e) {
+      console.error('[SettingsStore] 更新每日提醒配置失败:', e);
+    }
+  },
+
+  setPeriodicSummaryEnabled: async (enabled: boolean) => {
+    try {
+      const db = await getDatabase();
+      await db.runAsync(QUERIES.UPSERT_SETTING, ['periodic_summary_enabled', enabled ? '1' : '0']);
+      set({ periodicSummaryEnabled: enabled });
+    } catch (e) {
+      console.error('[SettingsStore] 更新周期总结配置失败:', e);
+    }
+  },
+
+  setHasPromptedNotification: async (prompted: boolean) => {
+    try {
+      const db = await getDatabase();
+      await db.runAsync(QUERIES.UPSERT_SETTING, ['has_prompted_notification', prompted ? '1' : '0']);
+      set({ hasPromptedNotification: prompted });
+    } catch (e) {
+      console.error('[SettingsStore] 更新提醒弹窗提示状态失败:', e);
     }
   },
 

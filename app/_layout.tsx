@@ -1,13 +1,15 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { useTheme } from '@/src/hooks/useTheme';
 import { useSettingsStore } from '@/src/stores/useSettingsStore';
+import { NotificationService } from '@/src/services/NotificationService';
+import { ReminderPromptModal } from '@/src/components/common/ReminderPromptModal';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -48,8 +50,18 @@ export default function RootLayout() {
         // 启动时预载类别
         const { useCategoryStore } = await import('@/src/stores/useCategoryStore');
         await useCategoryStore.getState().initCategories();
+
+        // 初始化通知通道并同步调度当前已开启的提醒
+        await NotificationService.initNotificationChannel();
+        const settings = useSettingsStore.getState();
+        if (settings.dailyReminderEnabled || settings.periodicSummaryEnabled) {
+          await NotificationService.syncReminders(
+            settings.dailyReminderEnabled,
+            settings.periodicSummaryEnabled
+          );
+        }
       } catch (e) {
-        console.warn('数据库初始化失败:', e);
+        console.warn('数据库或通知初始化失败:', e);
       } finally {
         if (loaded) {
           SplashScreen.hideAsync();
@@ -69,8 +81,28 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const { colorScheme } = useTheme();
+  const router = useRouter();
   // 订阅 languagePreference 以便在用户手动切换语言时强制重新渲染整个导航树
-  const { languagePreference } = useSettingsStore();
+  const { languagePreference, hasPromptedNotification } = useSettingsStore();
+  const [showPromptModal, setShowPromptModal] = useState(false);
+
+  useEffect(() => {
+    // 监听通知点击响应跳转
+    const cleanup = NotificationService.setupNotificationListeners(router);
+    return () => {
+      cleanup();
+    };
+  }, [router]);
+
+  useEffect(() => {
+    // 若尚未引导过提醒开启，首次进入展示温和弹窗
+    if (!hasPromptedNotification) {
+      const timer = setTimeout(() => {
+        setShowPromptModal(true);
+      }, 1200);
+      return () => clearTimeout(timer);
+    }
+  }, [hasPromptedNotification]);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -102,6 +134,11 @@ function RootLayoutNav() {
             }} 
           />
         </Stack>
+
+        <ReminderPromptModal
+          visible={showPromptModal}
+          onClose={() => setShowPromptModal(false)}
+        />
       </ThemeProvider>
     </GestureHandlerRootView>
   );

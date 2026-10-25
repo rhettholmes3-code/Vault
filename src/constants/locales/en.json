@@ -1,4 +1,4 @@
-﻿{
+{
   "category": {
     "food": "Food",
     "transport": "Transport",
@@ -139,7 +139,15 @@
     "export_last_month": "Last Month",
     "export_this_year": "This Year",
     "export_last_year": "Last Year",
-    "export_all": "All"
+    "export_all": "All",
+    "reminders": "Smart Reminders",
+    "reminders_desc": "Daily logging reminders and periodic spending reports",
+    "daily_reminder": "Daily Logging Reminders",
+    "daily_reminder_desc": "Reminders at 12:30 and 21:30 daily",
+    "periodic_summary": "Weekly / Monthly Reports",
+    "periodic_summary_desc": "Summaries every Monday 09:00 & 1st of month 09:30",
+    "backup_title": "Data Security & Backup",
+    "backup_desc": "Full backup, restore & safety snapshots"
   },
   "csv": {
     "date": "Date",
@@ -172,5 +180,51 @@
     "toast_duplicate_name": "Category name already exists",
     "toast_success": "Category created",
     "toast_too_long": "Category name too long"
+  },
+  "notifications": {
+    "prompt_title": "Enable Expense Reminders",
+    "prompt_desc": "Enable scheduled reminders to build a daily logging habit and review weekly/monthly finances.",
+    "prompt_enable": "Enable Now",
+    "prompt_skip": "Not Now",
+    "permission_denied_title": "Notification Permission Required",
+    "permission_denied_desc": "Please allow notifications for Vault in system settings to receive timely reminders.",
+    "go_to_settings": "Settings",
+    "cancel": "Cancel",
+    "channel_reminders_name": "Expense Reminders",
+    "channel_reminders_desc": "Daily logging reminders and periodic spending reports",
+    "lunch_title": "Expense Reminder 🍱",
+    "lunch_body": "Time for lunch! Don't forget to record your midday expense",
+    "evening_title": "Evening Review 🌙",
+    "evening_body_zero": "Great job today! Review and log your expenses for the day 🌙",
+    "evening_body_done": "You logged %{count} transactions today. Any other expenses to record? 🌙",
+    "weekly_title": "Weekly Expense Summary 📊",
+    "weekly_body": "Last week's total expense was %{currency}%{amount}, with %{category} being the highest. Have a great week!",
+    "weekly_body_none": "No expenses recorded last week. Keep up the good work this week!",
+    "monthly_title": "Monthly Financial Report 📈",
+    "monthly_body_budget": "Last month's total expense was %{currency}%{amount}, budget remaining %{currency}%{balance}. Tap to view full report",
+    "monthly_body_over": "Last month's total expense was %{currency}%{amount}, over budget by %{currency}%{balance}. Tap to view full report",
+    "monthly_body_no_budget": "Last month's total expense was %{currency}%{amount}. Tap to view full report"
+  },
+  "backup": {
+    "card_title": "Data Security & Backup",
+    "card_desc": "Full backup, restore & safety snapshots",
+    "export_btn": "Export Full Backup (JSON)",
+    "export_desc": "Export transactions, categories, and settings as a backup file",
+    "import_btn": "Import & Restore Data",
+    "import_desc": "Restore data from backup file; auto-generates safety snapshot before overwrite",
+    "rollback_btn": "Undo Last Restore",
+    "rollback_desc": "Rollback to the safety snapshot before the last overwrite restore",
+    "export_success": "Backup file exported successfully",
+    "export_fail": "Export backup failed: %{error}",
+    "no_snapshot": "No revocable safety snapshot found",
+    "confirm_restore_title": "Confirm Data Restore",
+    "confirm_restore_desc": "Backup Time: %{date}\nTransactions: %{count}\nTotal Expense: %{currency}%{expense}\nTotal Income: %{currency}%{income}\n\n⚠️ Restoring will overwrite current data. A safety snapshot has been saved and can be undone at any time. Proceed?",
+    "restore_success": "Data restored successfully!",
+    "restore_fail": "Import failed: %{error}",
+    "rollback_confirm_title": "Undo Restore Confirmation",
+    "rollback_confirm_desc": "Are you sure you want to undo the last restore and revert to the previous snapshot?",
+    "rollback_success": "Successfully rolled back to state before restore!",
+    "rollback_fail": "Rollback failed: %{error}",
+    "invalid_file": "Selected file is not a valid Vault backup file"
   }
 }

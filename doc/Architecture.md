@@ -306,16 +306,18 @@ ORDER BY total DESC;
   2. `checkDailyStatusAndFormat()`: 若当日已记过账，晚间触发温和复盘文案（"今天已记 %{count} 笔账，看看是否还有遗漏的开销 🌙"）。
   3. `scheduleWeeklyReport()`: 每周一 09:00 分析上周 SQLite 数据，汇总金额与 TOP1 类别。
   4. `scheduleMonthlyReport()`: 每月 1 号 09:30 分析上月支出总额与预算结余。
-- **权限与状态管理**：配置状态持久化在 `useSettingsStore` 中，初次开启主动请求系统通知权限。
+  5. `setupNotificationListeners(router)`: 监听通知点击响应，记账提醒跳转 `/(modals)/add`，总结提醒跳转概览统计。
+- **权限与状态管理**：首次启动展示专属授权弹窗引导激活，配置状态持久化在 `useSettingsStore` 中，支持在设置页细分开关。
 
 #### B. 可追溯、可恢复的全量数据备份与灾备系统 (`services/BackupService.ts`)
 - **可追溯数据协议 (`Schema v1`)**：
   - 结构包含：`schemaVersion: 1`、`metadata`（时间戳、App版本、条数、收支 Checksum）、`settings`（偏好/预算/通知）、`categories`（物理分类定义）、`transactions`（全量流水）。
 - **零破坏原子还原流程**：
-  1. **安全自动快照 (Safety Auto-Snapshot)**：在执行覆盖导入前，系统自动在本地沙盒持久化一份 `auto_safety_snapshot.json`，用户若误选文件可随时一键安全撤销还原。
-  2. **校验与审计预览**：解析拾取的 JSON，核验 Checksum 与 Schema 版本，弹出审计确认框（包含笔数、金额、备份生成时间）。
-  3. **SQLite 原子事务写入**：在单个 Database Transaction 中执行数据清理与重新灌装，若中途发生任何异常自动 `ROLLBACK`，旧数据毫发无损。
-- **文件交互**：利用 `expo-sharing` 调起原生系统分享，利用 `expo-document-picker` 拾取备份文件。
+  1. **安全自动快照 (Safety Auto-Snapshot)**：在执行覆盖导入前，系统自动在本地沙盒持久化一份 `auto_safety_snapshot.json`。
+  2. **一键撤销回退**：导入后若发现错误，可通过 `rollbackSafetySnapshot()` 读取该快照瞬间恢复到覆盖前状态。
+  3. **校验与审计预览**：解析拾取的 JSON，核验 Checksum 与 Schema 版本，弹出审计确认框（包含笔数、金额、备份生成时间）。
+  4. **SQLite 原子事务写入**：在单个 Database Transaction 中执行数据清理与重新灌装，若中途发生任何异常自动 `ROLLBACK`，旧数据毫发无损。
+- **文件交互**：利用 `expo-sharing` 调起原生系统分享，利用 `expo-document-picker` 拾取备份文件。设置页独立为“数据安全与备份”卡片，并保留 CSV 导出。
 
 ---
 
@@ -323,7 +325,7 @@ ORDER BY total DESC;
 
 | 版本 | 日期 | 更新内容 |
 |------|------|----------|
-| v1.1.0-spec | 2026-10-25 | 确立 v1.1 架构设计规范：建立全局 i18n 铁律、本地离线智能提醒机制、以及带自动快照与原子事务的可追溯数据备份系统。 |
+| v1.1.0 | 2026-10-25 | 落地交付 v1.1.0 架构升级：引入 `expo-notifications` 与 `expo-document-picker`；实现完全离线的智能提醒调度与点击路由监听；实现基于 Schema v1 的原子事务全量备份、导入审计确认与安全快照一键撤销机制；多语言 100% 同步对齐。 |
 | v1.2 | 2026-06-27 | 新增类别自定义功能支持，包括 SQLite 表结构 categories 设计、useCategoryStore 状态控制及 reorder/active 逻辑。 |
 | v1.0 | 2026-05-17 | 初始版本：确立 React Native + Expo + SQLite 技术栈 |
 | v1.1 | 2026-05-17 | 重整文档：移除与 Migration_Plan 重复的 Phase 规划，纯化为架构设计文档；更新目录结构反映实际项目布局 |
