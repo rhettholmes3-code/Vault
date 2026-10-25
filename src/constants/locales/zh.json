@@ -147,7 +147,12 @@
     "periodic_summary": "周/月支出总结",
     "periodic_summary_desc": "每周一 09:00 与每月 1 号 09:30 总结支出",
     "backup_title": "数据安全与备份",
-    "backup_desc": "全量数据备份、恢复与快照防护"
+    "backup_desc": "全量数据备份、恢复与快照防护",
+    "more": "更多设置",
+    "more_desc": "数据备份与开发者高级选项",
+    "test_notification": "发送测试提醒通知",
+    "test_notification_desc": "2秒后触发本地测试提醒",
+    "test_notification_sent": "测试通知已调度，请在 2 秒内切到桌面查看通知栏！"
   },
   "csv": {
     "date": "日期",
@@ -203,7 +208,9 @@
     "monthly_title": "上月财务月报 📈",
     "monthly_body_budget": "上月总支出 %{currency}%{amount}，预算结余 %{currency}%{balance}。点击查看完整月报",
     "monthly_body_over": "上月总支出 %{currency}%{amount}，超出预算 %{currency}%{balance}。点击查看完整月报",
-    "monthly_body_no_budget": "上月总支出 %{currency}%{amount}。点击查看完整月报"
+    "monthly_body_no_budget": "上月总支出 %{currency}%{amount}。点击查看完整月报",
+    "test_title": "记账测试提醒 🔔",
+    "test_body": "这是一条即时测试提醒，点击即可直达记账界面！"
   },
   "backup": {
     "card_title": "数据安全与备份",

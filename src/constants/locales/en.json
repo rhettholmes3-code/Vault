@@ -147,7 +147,12 @@
     "periodic_summary": "Weekly / Monthly Reports",
     "periodic_summary_desc": "Summaries every Monday 09:00 & 1st of month 09:30",
     "backup_title": "Data Security & Backup",
-    "backup_desc": "Full backup, restore & safety snapshots"
+    "backup_desc": "Full backup, restore & safety snapshots",
+    "more": "More Settings",
+    "more_desc": "Data backup & developer options",
+    "test_notification": "Send Test Reminder",
+    "test_notification_desc": "Trigger local test reminder in 2s",
+    "test_notification_sent": "Test notification scheduled! Background the app within 2s to check."
   },
   "csv": {
     "date": "Date",
@@ -203,7 +208,9 @@
     "monthly_title": "Monthly Financial Report 📈",
     "monthly_body_budget": "Last month's total expense was %{currency}%{amount}, budget remaining %{currency}%{balance}. Tap to view full report",
     "monthly_body_over": "Last month's total expense was %{currency}%{amount}, over budget by %{currency}%{balance}. Tap to view full report",
-    "monthly_body_no_budget": "Last month's total expense was %{currency}%{amount}. Tap to view full report"
+    "monthly_body_no_budget": "Last month's total expense was %{currency}%{amount}. Tap to view full report",
+    "test_title": "Expense Test Reminder 🔔",
+    "test_body": "This is a test reminder. Tap to open expense entry!"
   },
   "backup": {
     "card_title": "Data Security & Backup",

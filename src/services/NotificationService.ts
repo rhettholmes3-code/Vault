@@ -248,6 +248,26 @@ export const NotificationService = {
   },
 
   /**
+   * 发送即时测试通知（2秒后在系统通知栏触发，用于验证通知弹窗与点击直达）
+   */
+  sendTestNotification: async () => {
+    await NotificationService.initNotificationChannel();
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: t('notifications.test_title'),
+        body: t('notifications.test_body'),
+        data: { type: 'daily_reminder' },
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+        seconds: 2,
+        repeats: false,
+        channelId: REMINDERS_CHANNEL_ID,
+      },
+    });
+  },
+
+  /**
    * 同步调度所有提醒状态
    */
   syncReminders: async (dailyEnabled: boolean, periodicEnabled: boolean) => {
