@@ -62,11 +62,12 @@ Vault 是一款专为个人用户设计的离线记账应用。所有数据存�
 
 ## 自动化质量保障与发布门禁
 
-项目建立了严格的发布前质量门禁标准，任何版本构建发布前必须 100% 依次通过：
+项目建立了严格的发布前质量门禁标准与真实数据绝对保全铁律，任何版本构建发布前必须 100% 依次通过：
 1. `npx tsc --noEmit`：TypeScript 全局静态类型检查；
 2. `node scripts/verify_i18n_keys.js`：全局代码 i18n 静态扫描，杜绝未定义翻译键；
 3. `node scripts/run_v11_tests.js`：450+ 项业务逻辑全量自动化测试（双语对齐、Schema v1、防篡改校验和、动态感知文案、超支计算）；
-4. `npx expo export --platform android`：Hermes 生产打包编译预检。
+4. `npx expo export --platform android`：Hermes 生产打包编译预检；
+5. **真实数据绝对保全测试 (Zero Data Loss)**：老版本升级覆盖验证，确保沙盒 SQLite 数据条数、金额、分类、设置 100% 毫发无损。
 
 ## 版本历史
 

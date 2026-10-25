@@ -50,6 +50,22 @@
 - **文档沉淀**：任何特性、修补、重构必须在 `doc/`（如 `UX.md`、`Architecture.md`、`Vault.md`）的版本历史与设计章节中留痕。
 - **提交规范**：Git Commit Message 必须采用标准语义化格式（如 `feat(v1.1.0): ...`、`fix(i18n): ...`）。
 
+### 4.4 真实用户数据绝对保全铁律与核心测试点 (Zero Data Loss Protocol)
+> 🚨 **项目最高安全红线**：用户记录的真实财务数据是无价的。**任何代码更新、框架迭代、Bug 修复或异常崩溃，都绝对不能造成用户已有数据的丢失或损坏！**
+
+1. **底层物理沙盒与持久化隔离**：
+   - 数据库文件物理位于 Android 私有沙盒 `/data/data/com.rhettholmes.vault/databases/vault.db`。
+   - 覆盖升级安装（In-Place Upgrade）仅替换代码 bundle，Android 系统级保障 `/data/data/` 目录不被改动。**严禁以任何理由要求或提示老用户“卸载重装”**。
+2. **Schema 幂等性与零破坏 DDL 准则**：
+   - 数据库初始化必须且只能使用 `CREATE TABLE IF NOT EXISTS`、`CREATE INDEX IF NOT EXISTS`；
+   - **绝对禁止使用 `DROP TABLE`、`TRUNCATE` 或任何无条件清空真实数据的语句**；
+   - 任何涉及表结构重构或列扩充，必须采用平滑迁移脚本（`ALTER TABLE ADD COLUMN` 并附带默认值），确保历史表结构平滑升级。
+3. **Crash 隔离与 ACID 防损机制**：
+   - SQLite 强制启用 `PRAGMA journal_mode = WAL;` 与 `PRAGMA foreign_keys = ON;`；
+   - 任何前端 UI 渲染错误或 JavaScript 异常崩溃，由于数据已落盘且受 WAL 保护，**崩溃绝对不会污染或破坏底层 SQLite 数据库**。一旦重新打开 App 或覆盖安装修复包，历史数据完好无损。
+4. **版本发布前必测核心测试点：老版本升级零数据损毁验证 (Migration Test)**：
+   - 在触发正式发布构建前，必须在测试用例中验证：在存有旧版本历史数据的前提下，执行升级初始化流程，老数据的**笔数、金额、分类、备注、预算设置 100% 保持不变**。
+
 ---
 
 ## 5. 全流程自动化质量保障与发布门禁规范（四大铁律门禁）

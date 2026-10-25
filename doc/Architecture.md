@@ -327,6 +327,12 @@ ORDER BY total DESC;
 3. **全自动化业务逻辑与边界套件**：`node scripts/run_v11_tests.js`，验证 450+ 项单元测试，包括双语字典对称、动态插值、Schema v1 格式、防篡改校验和、动态感知文案、预算超支计算等。
 4. **Hermes Bytecode 打包预检**：`npx expo export --platform android`，验证最终静态包生成，确保无 Native 编译期致命异常。
 
+### 9.4 真实数据绝对保全铁律 (Zero Data Loss Protocol)
+1. **沙盒持久化隔离**：SQLite 二进制文件物理位于私有路径 `/data/data/com.rhettholmes.vault/databases/vault.db`，覆盖升级保证该沙盒不被擦除，严禁向用户提示卸载重装。
+2. **Schema 幂等性**：仅允许 `IF NOT EXISTS`，绝对禁止破坏性清库 DDL。
+3. **Crash 隔离与 WAL 模式**：前端渲染 Crash 与 JS 异常绝不影响底层磁盘数据库，修复后重新打开历史数据完好如初。
+4. **版本升级回归测试底线**：发布前必测老版本数据覆盖升级迁移，确保账单条数、金额、分类 100% 毫发无损。
+
 ---
 
 ## 10. 更新日志
