@@ -325,7 +325,7 @@ ORDER BY total DESC;
 
 | 版本 | 日期 | 更新内容 |
 |------|------|----------|
-| v1.1.0 | 2026-10-25 | 落地交付 v1.1.0 架构升级：引入 `expo-notifications` 与 `expo-document-picker`；实现完全离线的智能提醒调度与点击路由监听；实现基于 Schema v1 的原子事务全量备份、导入审计确认与安全快照一键撤销机制；多语言 100% 同步对齐。 |
+| v1.1.0 | 2026-10-25 | 落地交付 v1.1.0 架构升级：引入 `expo-notifications` 与 `expo-document-picker`；实现完全离线的智能提醒调度与点击路由监听；实现基于 Schema v1 的原子事务全量备份、导入审计确认与安全快照一键撤销机制；多语言 100% 同步对齐；通过 440 项全自动化质量校验与 Hermes Bytecode 编译打包。 |
 | v1.2 | 2026-06-27 | 新增类别自定义功能支持，包括 SQLite 表结构 categories 设计、useCategoryStore 状态控制及 reorder/active 逻辑。 |
 | v1.0 | 2026-05-17 | 初始版本：确立 React Native + Expo + SQLite 技术栈 |
 | v1.1 | 2026-05-17 | 重整文档：移除与 Migration_Plan 重复的 Phase 规划，纯化为架构设计文档；更新目录结构反映实际项目布局 |
