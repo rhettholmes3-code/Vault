@@ -214,6 +214,7 @@
     "import_desc": "Restore data from backup file; auto-generates safety snapshot before overwrite",
     "rollback_btn": "Undo Last Restore",
     "rollback_desc": "Rollback to the safety snapshot before the last overwrite restore",
+    "rollback_title": "Undo Restore",
     "export_success": "Backup file exported successfully",
     "export_fail": "Export backup failed: %{error}",
     "no_snapshot": "No revocable safety snapshot found",

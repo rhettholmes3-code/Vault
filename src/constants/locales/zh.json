@@ -214,6 +214,7 @@
     "import_desc": "从备份文件恢复数据，导入前自动生成安全快照",
     "rollback_btn": "撤回上一次导入",
     "rollback_desc": "还原至最近一次覆盖导入前的临时快照状态",
+    "rollback_title": "撤回导入",
     "export_success": "备份文件导出成功",
     "export_fail": "导出备份失败: %{error}",
     "no_snapshot": "暂无可撤销的安全快照",
