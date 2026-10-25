@@ -319,6 +319,14 @@ ORDER BY total DESC;
   4. **SQLite 原子事务写入**：在单个 Database Transaction 中执行数据清理与重新灌装，若中途发生任何异常自动 `ROLLBACK`，旧数据毫发无损。
 - **文件交互**：利用 `expo-sharing` 调起原生系统分享，利用 `expo-document-picker` 拾取备份文件。设置页独立为“数据安全与备份”卡片，并保留 CSV 导出。
 
+### 9.3 研发质量保障与四大发布门禁系统 (Release Gates)
+
+为防范 Android 本地数据破坏、翻译遗漏及打包期崩溃，设立发布前四大强制门禁：
+1. **静态语法与类型门禁**：`npx tsc --noEmit`，要求 0 错误 0 警告。
+2. **i18n 代码调用静态扫描**：`node scripts/verify_i18n_keys.js`，自动扫描 50+ 个源码文件中的所有 `t('...')`，杜绝任何未在双语字典声明的死键。
+3. **全自动化业务逻辑与边界套件**：`node scripts/run_v11_tests.js`，验证 450+ 项单元测试，包括双语字典对称、动态插值、Schema v1 格式、防篡改校验和、动态感知文案、预算超支计算等。
+4. **Hermes Bytecode 打包预检**：`npx expo export --platform android`，验证最终静态包生成，确保无 Native 编译期致命异常。
+
 ---
 
 ## 10. 更新日志

@@ -60,6 +60,14 @@ Vault 是一款专为个人用户设计的离线记账应用。所有数据存�
   3. **正式商店上架**：通过 EAS Build 构建 `.aab` 格式生产包，并使用 EAS Submit 配合 Google Cloud Service Account 自动提交并发布至 **Google Play 商店**。
   4. **线上热更新 (OTA)**：通过集成的 `expo-updates`，通过命令行 `eas update` 向生产客户端实时静默推送业务补丁，免去重复商店审核。
 
+## 自动化质量保障与发布门禁
+
+项目建立了严格的发布前质量门禁标准，任何版本构建发布前必须 100% 依次通过：
+1. `npx tsc --noEmit`：TypeScript 全局静态类型检查；
+2. `node scripts/verify_i18n_keys.js`：全局代码 i18n 静态扫描，杜绝未定义翻译键；
+3. `node scripts/run_v11_tests.js`：450+ 项业务逻辑全量自动化测试（双语对齐、Schema v1、防篡改校验和、动态感知文案、超支计算）；
+4. `npx expo export --platform android`：Hermes 生产打包编译预检。
+
 ## 版本历史
 
 | 版本 | 日期 | 更新内容 |
