@@ -46,7 +46,11 @@
 - **自动安全快照 (Safety Auto-Snapshot)**：在执行数据还原/覆盖前，系统必须自动为当前本地数据库生成一份隐式安全快照，确保用户随时拥有一键撤回/回滚能力。
 - **原子事务写入 (ACID Transaction)**：数据库数据重灌或大批量操作必须包裹在单个 SQLite 事务中，一旦捕获异常立即全量 `ROLLBACK`，绝不容许数据处于部分损坏状态。
 
-### 4.3 过程可追溯性 (Traceability)
+### 4.3 过程可追溯性与分支规范 (Traceability & Branching)
+- **分支协同规范**：采用 **GitHub Flow + Release Tags** 策略：
+  - `main` 为主开发干线；
+  - 准备发版时拉出 `release/vX.X.X` 分支执行四大发布门禁；
+  - 发布成功后在对应 Commit 打上标准 Git Tag（如 `v1.1.0`），同步关联 GitHub Releases 托管 APK 供应用内检查更新。
 - **文档沉淀**：任何特性、修补、重构必须在 `doc/`（如 `UX.md`、`Architecture.md`、`Vault.md`）的版本历史与设计章节中留痕。
 - **提交规范**：Git Commit Message 必须采用标准语义化格式（如 `feat(v1.1.0): ...`、`fix(i18n): ...`）。
 

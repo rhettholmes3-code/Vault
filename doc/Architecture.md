@@ -338,6 +338,11 @@ ORDER BY total DESC;
 2. **对比与弹窗机制**：解析云端 `tag_name` 与本地 `package.json` 中的 `version`，若有新版弹出更新内容摘要对话框。
 3. **免权限安全下载**：点击【立即更新】调用系统原生浏览器 (`Linking.openURL`) 打开 APK 附件下载链接，用户下载完成后直接覆盖安装升级，避免申请 Android 高危“安装未知应用”权限。
 
+### 9.6 Git 分支管理与 GitHub Flow 规范 (Branching Strategy)
+1. **`main` 主干分支**：集成经过评审与测试的功能代码，保持始终处于可运行状态。
+2. **`release/vX.X.X` 发布分支**：在大版本发布前从 `main` 切出，固化版本号与 `versionCode`，运行四大发布门禁并通过 EAS 构建最终安装包。
+3. **`vX.X.X` Git Tag 标签**：正式发布时在对应 commit 上打标语义化标签（如 `v1.1.0`），推送到 GitHub 并创建 GitHub Release 附带 APK 安装包。
+
 ---
 
 ## 10. 更新日志
