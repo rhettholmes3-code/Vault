@@ -32,7 +32,9 @@ Vault/
 │   ├── (tabs)/                   # Tab 导航组
 │   │   ├── _layout.tsx           # TabBar 配置（3 Tab + FAB）
 │   │   ├── index.tsx             # 概览页（账本 + 统计模式切换）
-│   │   └── settings.tsx          # 更多/设置页
+│   │   └── settings.tsx          # 主设置页（一级菜单：预算/导出/偏好入口/关于）
+│   ├── reminder-settings.tsx     # 智能提醒管理页（二级菜单：每日提醒从属/周期总结/准时排查）
+│   ├── more-settings.tsx         # 高级设置页（二级菜单：数据备份灾备/开发者选项层级管理）
 │   ├── add-entry.tsx             # 记账页（全屏 Modal）
 │   └── edit-entry/[id].tsx       # 编辑页（动态路由）
 │

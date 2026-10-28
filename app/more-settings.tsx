@@ -219,9 +219,9 @@ export default function MoreSettingsScreen() {
           </GlassCard>
         </View>
 
-        {/* 开发者选项 */}
+        {/* 开发者选项 - 提醒自检 */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>{t('settings.dev_options')}</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>{t('settings.dev_reminders')}</Text>
           <GlassCard style={styles.card}>
             <TouchableOpacity style={styles.menuItem} onPress={handleSendTestNotification} activeOpacity={0.7}>
               <View style={[styles.iconContainer, { backgroundColor: '#6366f118' }]}>
@@ -246,9 +246,13 @@ export default function MoreSettingsScreen() {
               </View>
               <MaterialIcons name="chevron-right" size={20} color={colors.textSecondary} />
             </TouchableOpacity>
+          </GlassCard>
+        </View>
 
-            <View style={[styles.divider, { backgroundColor: colors.border }]} />
-
+        {/* 开发者选项 - 数据维护 */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>{t('settings.dev_data')}</Text>
+          <GlassCard style={styles.card}>
             <TouchableOpacity style={styles.menuItem} onPress={handleGenerateMockData} activeOpacity={0.7}>
               <View style={[styles.iconContainer, { backgroundColor: '#eab30818' }]}>
                 <MaterialIcons name="science" size={22} color="#eab308" />

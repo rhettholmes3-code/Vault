@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Switch, Alert, Linking, ActivityIndicator, Platform } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Switch, Alert, Linking, ActivityIndicator } from 'react-native';
 import { useTheme } from '@/src/hooks/useTheme';
 import { router } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -8,7 +7,6 @@ import { GlassCard } from '@/src/components/common/GlassCard';
 import { BudgetDrawer } from '@/src/components/settings/BudgetDrawer';
 import { ExportDrawer } from '@/src/components/settings/ExportDrawer';
 import { useSettingsStore } from '@/src/stores/useSettingsStore';
-import { NotificationService } from '@/src/services/NotificationService';
 import { UpdateService } from '@/src/services/UpdateService';
 import { t } from '@/src/constants/i18n';
 
@@ -23,19 +21,15 @@ export default function SettingsScreen() {
     setCurrencyPreference,
     getCurrencySymbol,
     dailyReminderEnabled,
-    setDailyReminderEnabled,
     periodicSummaryEnabled,
-    setPeriodicSummaryEnabled,
     dailyReminderLunchTime,
     dailyReminderEveningTime,
-    setDailyReminderTimes,
   } = useSettingsStore();
   const currencySymbol = getCurrencySymbol();
   
   const [budgetVisible, setBudgetVisible] = useState(false);
   const [exportVisible, setExportVisible] = useState(false);
   const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
-  const [timePickerTarget, setTimePickerTarget] = useState<'lunch' | 'evening' | null>(null);
 
   useEffect(() => {
     fetchSettings();
@@ -78,86 +72,6 @@ export default function SettingsScreen() {
       );
     } finally {
       setIsCheckingUpdate(false);
-    }
-  };
-
-  const handleToggleDailyReminder = async (val: boolean) => {
-    if (val) {
-      const granted = await NotificationService.requestPermissions();
-      if (!granted) {
-        Alert.alert(
-          t('notifications.permission_denied_title'),
-          t('notifications.permission_denied_desc'),
-          [
-            { text: t('notifications.cancel'), style: 'cancel' },
-            { text: t('notifications.go_to_settings'), onPress: () => Linking.openSettings() },
-          ]
-        );
-        return;
-      }
-      await setDailyReminderEnabled(true);
-      await NotificationService.scheduleDailyReminders();
-    } else {
-      await setDailyReminderEnabled(false);
-      await NotificationService.syncReminders(false, periodicSummaryEnabled);
-    }
-  };
-
-  const parseTimeToDate = (timeStr: string): Date => {
-    const [h, m] = (timeStr || '12:00').split(':').map(Number);
-    const d = new Date();
-    d.setHours(h || 12, m || 0, 0, 0);
-    return d;
-  };
-
-  const handleTimePickerChange = async (event: any, selectedDate?: Date) => {
-    const target = timePickerTarget;
-    setTimePickerTarget(null);
-    if (!selectedDate || event?.type === 'dismissed') return;
-
-    const hours = selectedDate.getHours().toString().padStart(2, '0');
-    const minutes = selectedDate.getMinutes().toString().padStart(2, '0');
-    const newTime = `${hours}:${minutes}`;
-
-    if (target === 'lunch') {
-      await setDailyReminderTimes(newTime, dailyReminderEveningTime);
-      await NotificationService.scheduleDailyReminders(newTime, dailyReminderEveningTime);
-    } else if (target === 'evening') {
-      await setDailyReminderTimes(dailyReminderLunchTime, newTime);
-      await NotificationService.scheduleDailyReminders(dailyReminderLunchTime, newTime);
-    }
-  };
-
-  const handleBatteryGuidePress = () => {
-    Alert.alert(
-      t('settings.battery_guide_title'),
-      t('settings.battery_guide_content'),
-      [
-        { text: t('notifications.cancel'), style: 'cancel' },
-        { text: t('settings.go_to_app_settings'), onPress: () => Linking.openSettings() },
-      ]
-    );
-  };
-
-  const handleTogglePeriodicSummary = async (val: boolean) => {
-    if (val) {
-      const granted = await NotificationService.requestPermissions();
-      if (!granted) {
-        Alert.alert(
-          t('notifications.permission_denied_title'),
-          t('notifications.permission_denied_desc'),
-          [
-            { text: t('notifications.cancel'), style: 'cancel' },
-            { text: t('notifications.go_to_settings'), onPress: () => Linking.openSettings() },
-          ]
-        );
-        return;
-      }
-      await setPeriodicSummaryEnabled(true);
-      await NotificationService.schedulePeriodicSummaries();
-    } else {
-      await setPeriodicSummaryEnabled(false);
-      await NotificationService.syncReminders(dailyReminderEnabled, false);
     }
   };
 
@@ -214,6 +128,16 @@ export default function SettingsScreen() {
     return currencyPreference;
   };
 
+  const getRemindersSummary = () => {
+    if (dailyReminderEnabled) {
+      return `${dailyReminderLunchTime} / ${dailyReminderEveningTime}`;
+    }
+    if (periodicSummaryEnabled) {
+      return t('settings.summary_only');
+    }
+    return t('settings.disabled');
+  };
+
   const menuItems: { title: string; items: any[] }[] = [
     {
       title: t('settings.account'),
@@ -237,67 +161,6 @@ export default function SettingsScreen() {
       ]
     },
     {
-      title: t('settings.reminders'),
-      items: [
-        {
-          id: 'daily_reminder',
-          label: t('settings.daily_reminder'),
-          icon: 'alarm',
-          color: '#f59e0b',
-          right: (
-            <Switch
-              value={dailyReminderEnabled}
-              onValueChange={handleToggleDailyReminder}
-              trackColor={{ false: '#cbd5e1', true: '#f59e0b' }}
-              thumbColor="#fff"
-            />
-          ),
-        },
-        ...(dailyReminderEnabled
-          ? [
-              {
-                id: 'reminder_time_lunch',
-                label: t('settings.reminder_time_lunch'),
-                value: dailyReminderLunchTime,
-                icon: 'schedule',
-                color: '#f59e0b',
-                onPress: () => setTimePickerTarget('lunch'),
-              },
-              {
-                id: 'reminder_time_evening',
-                label: t('settings.reminder_time_evening'),
-                value: dailyReminderEveningTime,
-                icon: 'nightlight-round',
-                color: '#f59e0b',
-                onPress: () => setTimePickerTarget('evening'),
-              },
-            ]
-          : []),
-        {
-          id: 'periodic_summary',
-          label: t('settings.periodic_summary'),
-          icon: 'insights',
-          color: '#8b5cf6',
-          right: (
-            <Switch
-              value={periodicSummaryEnabled}
-              onValueChange={handleTogglePeriodicSummary}
-              trackColor={{ false: '#cbd5e1', true: '#8b5cf6' }}
-              thumbColor="#fff"
-            />
-          ),
-        },
-        {
-          id: 'battery_guide',
-          label: t('settings.battery_guide'),
-          value: '',
-          icon: 'help-outline',
-          color: '#64748b',
-          onPress: handleBatteryGuidePress,
-        },
-      ],
-    },
-    {
       title: t('settings.preferences'),
       items: [
         {
@@ -307,6 +170,14 @@ export default function SettingsScreen() {
           icon: 'category',
           color: '#f97316',
           onPress: () => router.push('/category-management' as any)
+        },
+        {
+          id: 'reminders',
+          label: t('settings.reminders'),
+          value: getRemindersSummary(),
+          icon: 'notifications',
+          color: '#f59e0b',
+          onPress: () => router.push('/reminder-settings' as any),
         },
         { 
           id: 'theme', 
@@ -418,18 +289,6 @@ export default function SettingsScreen() {
 
       <BudgetDrawer visible={budgetVisible} onClose={() => setBudgetVisible(false)} />
       <ExportDrawer visible={exportVisible} onClose={() => setExportVisible(false)} />
-
-      {timePickerTarget !== null && (
-        <DateTimePicker
-          value={parseTimeToDate(
-            timePickerTarget === 'lunch' ? dailyReminderLunchTime : dailyReminderEveningTime
-          )}
-          mode="time"
-          is24Hour={true}
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          onChange={handleTimePickerChange}
-        />
-      )}
     </View>
   );
 }
