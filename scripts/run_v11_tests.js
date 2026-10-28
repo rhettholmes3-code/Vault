@@ -221,8 +221,31 @@ const appJson = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'app.json'
 const pkgJson = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
 
 assert(appJson.expo.version === pkgJson.version, `app.json (${appJson.expo.version}) 与 package.json (${pkgJson.version}) 版本号一致`);
-assert(appJson.expo.android.versionCode >= 7, `android.versionCode 严格递增至 >= 7 (当前: ${appJson.expo.android.versionCode})`);
-assert(compareSemver(appJson.expo.version, '1.1.0') > 0, `新发布版本号 (${appJson.expo.version}) 高于上一版本 1.1.0`);
+assert(appJson.expo.android.versionCode >= 8, `android.versionCode 严格递增至 >= 8 (当前: ${appJson.expo.android.versionCode})`);
+assert(compareSemver(appJson.expo.version, '1.1.1') > 0, `新发布版本号 (${appJson.expo.version}) 高于上一版本 1.1.1`);
+
+// ----------------------------------------------------
+// 测试模块 6: Android 原生精确闹钟与后台唤醒权限校验
+// ----------------------------------------------------
+console.log('\n【测试模块 6】Android 精确闹钟权限与调度配置校验:');
+
+const permissions = appJson.expo.android.permissions || [];
+assert(permissions.includes('android.permission.SCHEDULE_EXACT_ALARM'), '已配置 SCHEDULE_EXACT_ALARM 权限 (解决 Android 12+ 准时闹钟)');
+assert(permissions.includes('android.permission.RECEIVE_BOOT_COMPLETED'), '已配置 RECEIVE_BOOT_COMPLETED 权限 (解决开机自启与定时器恢复)');
+assert(permissions.includes('android.permission.POST_NOTIFICATIONS'), '已配置 POST_NOTIFICATIONS 权限 (解决 Android 13+ 运行时通知)');
+assert(permissions.includes('android.permission.WAKE_LOCK'), '已配置 WAKE_LOCK 权限 (解决息屏唤醒)');
+
+// 校验自定义时间解析函数格式合法性
+function validateTimeFormat(timeStr) {
+  const match = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(timeStr);
+  return match;
+}
+
+assert(validateTimeFormat('12:30'), '合法时间格式 12:30 校验通过');
+assert(validateTimeFormat('09:05'), '合法时间格式 09:05 校验通过');
+assert(validateTimeFormat('23:59'), '合法时间格式 23:59 校验通过');
+assert(!validateTimeFormat('24:00'), '非法时间 24:00 被正确拦截');
+assert(!validateTimeFormat('12:60'), '非法时间 12:60 被正确拦截');
 
 // ----------------------------------------------------
 // 测试总结

@@ -162,7 +162,18 @@
     "update_now": "立即下载更新",
     "update_later": "稍后再说",
     "check_update_failed": "检查更新失败",
-    "check_update_failed_desc": "无法连接到更新服务器，请检查网络连接后重试。"
+    "check_update_failed_desc": "无法连接到更新服务器，请检查网络连接后重试。",
+    "reminder_time_lunch": "午间提醒时间",
+    "reminder_time_evening": "晚间提醒时间",
+    "reminder_time_desc": "自定义每日记账提醒的推送时刻",
+    "alarm_test": "1分钟定时唤醒测试 (AlarmManager)",
+    "alarm_test_desc": "测试系统准点唤醒。点击后请立即锁屏熄屏验证",
+    "alarm_test_scheduled": "1分钟定时已向系统注册！请立即按下电源键熄屏，1分钟后查看手机是否被准时唤醒。",
+    "battery_guide": "准时提醒排查指南",
+    "battery_guide_desc": "引导开启系统后台无限制、允许自启动与白名单",
+    "battery_guide_title": "如何确保系统准点提醒？",
+    "battery_guide_content": "Android 系统为延长续航，默认会对后台静置应用进行休眠限制。\n\n如需确保准点提醒：\n1. 点击下方【前往系统设置】；\n2. 找到【省电策略 / 电池优化】，选择【无限制】或【不优化】；\n3. 允许【自启动】与【后台弹出界面】权限。",
+    "go_to_app_settings": "前往系统设置"
   },
   "csv": {
     "date": "日期",
@@ -220,7 +231,9 @@
     "monthly_body_over": "上月总支出 %{currency}%{amount}，超出预算 %{currency}%{balance}。点击查看完整月报",
     "monthly_body_no_budget": "上月总支出 %{currency}%{amount}。点击查看完整月报",
     "test_title": "记账测试提醒 🔔",
-    "test_body": "这是一条即时测试提醒，点击即可直达记账界面！"
+    "test_body": "这是一条即时测试提醒，点击即可直达记账界面！",
+    "alarm_test_title": "1分钟真实定时唤醒测试 ⏰",
+    "alarm_test_body": "1分钟时间到！系统级 AlarmManager 已成功唤醒您的手机！"
   },
   "backup": {
     "card_title": "数据安全与备份",

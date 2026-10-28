@@ -37,6 +37,8 @@ interface SettingsState {
   currencyPreference: CurrencyType;
   dailyReminderEnabled: boolean;
   periodicSummaryEnabled: boolean;
+  dailyReminderLunchTime: string;
+  dailyReminderEveningTime: string;
   hasPromptedNotification: boolean;
   fetchSettings: () => Promise<void>;
   setMonthlyBudget: (budget: number) => Promise<void>;
@@ -45,6 +47,7 @@ interface SettingsState {
   setCurrencyPreference: (pref: CurrencyType) => Promise<void>;
   setDailyReminderEnabled: (enabled: boolean) => Promise<void>;
   setPeriodicSummaryEnabled: (enabled: boolean) => Promise<void>;
+  setDailyReminderTimes: (lunchTime: string, eveningTime: string) => Promise<void>;
   setHasPromptedNotification: (prompted: boolean) => Promise<void>;
   getCurrencySymbol: () => string;
 }
@@ -60,6 +63,8 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   currencyPreference: 'auto',
   dailyReminderEnabled: false,
   periodicSummaryEnabled: false,
+  dailyReminderLunchTime: '12:30',
+  dailyReminderEveningTime: '21:30',
   hasPromptedNotification: false,
   
   fetchSettings: async () => {
@@ -71,6 +76,8 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       const currencyRes = await db.getFirstAsync<{ value: string }>(QUERIES.GET_SETTING, ['currency_preference']);
       const dailyRemRes = await db.getFirstAsync<{ value: string }>(QUERIES.GET_SETTING, ['daily_reminder_enabled']);
       const periodicRes = await db.getFirstAsync<{ value: string }>(QUERIES.GET_SETTING, ['periodic_summary_enabled']);
+      const lunchTimeRes = await db.getFirstAsync<{ value: string }>(QUERIES.GET_SETTING, ['daily_reminder_lunch_time']);
+      const eveningTimeRes = await db.getFirstAsync<{ value: string }>(QUERIES.GET_SETTING, ['daily_reminder_evening_time']);
       const promptedRes = await db.getFirstAsync<{ value: string }>(QUERIES.GET_SETTING, ['has_prompted_notification']);
 
       let monthlyBudget = 5000;
@@ -79,6 +86,8 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       let currencyPreference: CurrencyType = 'auto';
       let dailyReminderEnabled = false;
       let periodicSummaryEnabled = false;
+      let dailyReminderLunchTime = '12:30';
+      let dailyReminderEveningTime = '21:30';
       let hasPromptedNotification = false;
 
       if (budgetRes) {
@@ -113,6 +122,14 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         periodicSummaryEnabled = periodicRes.value === '1';
       }
 
+      if (lunchTimeRes && lunchTimeRes.value) {
+        dailyReminderLunchTime = lunchTimeRes.value;
+      }
+
+      if (eveningTimeRes && eveningTimeRes.value) {
+        dailyReminderEveningTime = eveningTimeRes.value;
+      }
+
       if (promptedRes) {
         hasPromptedNotification = promptedRes.value === '1';
       }
@@ -131,6 +148,8 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         currencyPreference,
         dailyReminderEnabled,
         periodicSummaryEnabled,
+        dailyReminderLunchTime,
+        dailyReminderEveningTime,
         hasPromptedNotification,
       });
     } catch (e) {
@@ -203,6 +222,17 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       set({ periodicSummaryEnabled: enabled });
     } catch (e) {
       console.error('[SettingsStore] 更新周期总结配置失败:', e);
+    }
+  },
+
+  setDailyReminderTimes: async (lunchTime: string, eveningTime: string) => {
+    try {
+      const db = await getDatabase();
+      await db.runAsync(QUERIES.UPSERT_SETTING, ['daily_reminder_lunch_time', lunchTime]);
+      await db.runAsync(QUERIES.UPSERT_SETTING, ['daily_reminder_evening_time', eveningTime]);
+      set({ dailyReminderLunchTime: lunchTime, dailyReminderEveningTime: eveningTime });
+    } catch (e) {
+      console.error('[SettingsStore] 更新提醒时间失败:', e);
     }
   },
 

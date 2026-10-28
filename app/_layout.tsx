@@ -3,6 +3,7 @@ import { useFonts } from 'expo-font';
 import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
+import { AppState, AppStateStatus } from 'react-native';
 import 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
@@ -89,8 +90,23 @@ function RootLayoutNav() {
   useEffect(() => {
     // 监听通知点击响应跳转
     const cleanup = NotificationService.setupNotificationListeners(router);
+
+    // 监听切回前台事件，自动复核与防丢自愈提醒调度
+    const appStateSub = AppState.addEventListener('change', (nextState: AppStateStatus) => {
+      if (nextState === 'active') {
+        const settings = useSettingsStore.getState();
+        if (settings.dailyReminderEnabled || settings.periodicSummaryEnabled) {
+          NotificationService.syncReminders(
+            settings.dailyReminderEnabled,
+            settings.periodicSummaryEnabled
+          );
+        }
+      }
+    });
+
     return () => {
       cleanup();
+      appStateSub.remove();
     };
   }, [router]);
 

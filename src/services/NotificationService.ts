@@ -90,9 +90,9 @@ export const NotificationService = {
   },
 
   /**
-   * 调度每日记账提醒 (12:30 & 21:30)
+   * 调度每日记账提醒 (支持用户自定义时刻，默认 12:30 & 21:30)
    */
-  scheduleDailyReminders: async () => {
+  scheduleDailyReminders: async (customLunchTime?: string, customEveningTime?: string) => {
     try {
       await NotificationService.initNotificationChannel();
 
@@ -100,7 +100,14 @@ export const NotificationService = {
       await Notifications.cancelScheduledNotificationAsync(LUNCH_REMINDER_ID).catch(() => {});
       await Notifications.cancelScheduledNotificationAsync(EVENING_REMINDER_ID).catch(() => {});
 
-      // 1. 中午 12:30 提醒
+      const store = useSettingsStore.getState();
+      const lunchStr = customLunchTime || store.dailyReminderLunchTime || '12:30';
+      const eveningStr = customEveningTime || store.dailyReminderEveningTime || '21:30';
+
+      const [lunchHour, lunchMinute] = lunchStr.split(':').map(v => parseInt(v, 10) || 0);
+      const [eveningHour, eveningMinute] = eveningStr.split(':').map(v => parseInt(v, 10) || 0);
+
+      // 1. 中午提醒
       await Notifications.scheduleNotificationAsync({
         identifier: LUNCH_REMINDER_ID,
         content: {
@@ -110,13 +117,13 @@ export const NotificationService = {
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.DAILY,
-          hour: 12,
-          minute: 30,
+          hour: lunchHour,
+          minute: lunchMinute,
           channelId: REMINDERS_CHANNEL_ID,
         },
       });
 
-      // 2. 晚间 21:30 提醒（根据当天记账情况动态优化文案）
+      // 2. 晚间提醒（根据当天记账情况动态优化文案）
       const count = await NotificationService.getTodayTransactionCount();
       const eveningBody = count > 0
         ? t('notifications.evening_body_done', { count })
@@ -131,8 +138,8 @@ export const NotificationService = {
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.DAILY,
-          hour: 21,
-          minute: 30,
+          hour: eveningHour,
+          minute: eveningMinute,
           channelId: REMINDERS_CHANNEL_ID,
         },
       });
@@ -245,6 +252,26 @@ export const NotificationService = {
     } catch (e) {
       console.warn('[NotificationService] 调度周期总结失败:', e);
     }
+  },
+
+  /**
+   * 发送 1 分钟后定时闹钟唤醒测试（真正走系统 AlarmManager，息屏后验证锁屏唤醒）
+   */
+  scheduleOneMinuteAlarmTest: async () => {
+    await NotificationService.initNotificationChannel();
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: t('notifications.alarm_test_title'),
+        body: t('notifications.alarm_test_body'),
+        data: { type: 'daily_reminder' },
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+        seconds: 60,
+        repeats: false,
+        channelId: REMINDERS_CHANNEL_ID,
+      },
+    });
   },
 
   /**

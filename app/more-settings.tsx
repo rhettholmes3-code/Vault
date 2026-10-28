@@ -95,6 +95,24 @@ export default function MoreSettingsScreen() {
     }
   };
 
+  // 5.1 开发者选项：1分钟真实定时唤醒测试 (AlarmManager)
+  const handleScheduleOneMinuteAlarmTest = async () => {
+    try {
+      const granted = await NotificationService.requestPermissions();
+      if (!granted) {
+        Alert.alert(
+          t('notifications.permission_denied_title'),
+          t('notifications.permission_denied_desc')
+        );
+        return;
+      }
+      await NotificationService.scheduleOneMinuteAlarmTest();
+      Alert.alert(t('settings.alarm_test'), t('settings.alarm_test_scheduled'));
+    } catch (e) {
+      Alert.alert('Error', 'Failed to schedule 1-minute alarm test');
+    }
+  };
+
   // 6. 开发者选项：生成 180 天演示数据
   const handleGenerateMockData = () => {
     Alert.alert(
@@ -212,6 +230,19 @@ export default function MoreSettingsScreen() {
               <View style={styles.textContainer}>
                 <Text style={[styles.itemLabel, { color: colors.text }]}>{t('settings.test_notification')}</Text>
                 <Text style={[styles.itemSub, { color: colors.textSecondary }]}>{t('settings.test_notification_desc')}</Text>
+              </View>
+              <MaterialIcons name="chevron-right" size={20} color={colors.textSecondary} />
+            </TouchableOpacity>
+
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
+            <TouchableOpacity style={styles.menuItem} onPress={handleScheduleOneMinuteAlarmTest} activeOpacity={0.7}>
+              <View style={[styles.iconContainer, { backgroundColor: '#8b5cf618' }]}>
+                <MaterialIcons name="alarm" size={22} color="#8b5cf6" />
+              </View>
+              <View style={styles.textContainer}>
+                <Text style={[styles.itemLabel, { color: colors.text }]}>{t('settings.alarm_test')}</Text>
+                <Text style={[styles.itemSub, { color: colors.textSecondary }]}>{t('settings.alarm_test_desc')}</Text>
               </View>
               <MaterialIcons name="chevron-right" size={20} color={colors.textSecondary} />
             </TouchableOpacity>

@@ -162,7 +162,18 @@
     "update_now": "Download Update",
     "update_later": "Later",
     "check_update_failed": "Update Check Failed",
-    "check_update_failed_desc": "Unable to connect to update server. Please check your network and try again."
+    "check_update_failed_desc": "Unable to connect to update server. Please check your network and try again.",
+    "reminder_time_lunch": "Lunch Reminder Time",
+    "reminder_time_evening": "Evening Reminder Time",
+    "reminder_time_desc": "Customize daily reminder times",
+    "alarm_test": "1-Min Scheduled Wakeup Test (AlarmManager)",
+    "alarm_test_desc": "Test system alarm wakeup. Lock screen immediately to verify",
+    "alarm_test_scheduled": "1-minute alarm registered with the system! Lock screen now to verify punctual wakeup.",
+    "battery_guide": "Punctual Reminder Guide",
+    "battery_guide_desc": "Disable battery optimization & allow auto-start",
+    "battery_guide_title": "How to Ensure Punctual Alerts?",
+    "battery_guide_content": "Android restricts idle background apps to save battery.\n\nTo ensure timely alerts:\n1. Tap 'Go to Settings' below;\n2. In 'Battery Optimization', select 'Unrestricted' or 'Don't optimize';\n3. Allow 'Auto-start' and 'Background pop-up' permissions.",
+    "go_to_app_settings": "Go to Settings"
   },
   "csv": {
     "date": "Date",
@@ -220,7 +231,9 @@
     "monthly_body_over": "Last month's total expense was %{currency}%{amount}, over budget by %{currency}%{balance}. Tap to view full report",
     "monthly_body_no_budget": "Last month's total expense was %{currency}%{amount}. Tap to view full report",
     "test_title": "Expense Test Reminder 🔔",
-    "test_body": "This is a test reminder. Tap to open expense entry!"
+    "test_body": "This is a test reminder. Tap to open expense entry!",
+    "alarm_test_title": "1-Minute Scheduled Wakeup Test ⏰",
+    "alarm_test_body": "1 minute is up! System AlarmManager successfully woke up your device!"
   },
   "backup": {
     "card_title": "Data Security & Backup",

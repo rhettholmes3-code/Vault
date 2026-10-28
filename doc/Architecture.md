@@ -301,13 +301,19 @@ ORDER BY total DESC;
 
 #### A. 本地智能提醒与周期分析系统 (`services/NotificationService.ts`)
 - **完全离线调度**：采用 `expo-notifications` 注册本地定时计划通知（Local Scheduled Notifications），设备不联网亦可精准触发，严守隐私底线。
+- **Android 原生硬件准点唤醒与保活底座 (v1.1.2 工业级强化)**：
+  - 声明 `SCHEDULE_EXACT_ALARM`（Android 12+ 准点闹钟唤醒，规避 Doze 模式推迟）；
+  - 声明 `RECEIVE_BOOT_COMPLETED`（关机重启后系统自愈重新拉起 Alarm 调度）；
+  - 声明 `POST_NOTIFICATIONS`（Android 13+ 运行时通知权限）、`WAKE_LOCK` 与 `VIBRATE`；
+  - 接入 AppState 前台监听自愈机制，切回前台时自动复核闹钟队列防墓碑清理。
 - **调度模块职责**：
-  1. `scheduleDailyReminders()`: 每天 12:30（午餐提醒）与 21:30（晚间复盘）。
-  2. `checkDailyStatusAndFormat()`: 若当日已记过账，晚间触发温和复盘文案（"今天已记 %{count} 笔账，看看是否还有遗漏的开销 🌙"）。
-  3. `scheduleWeeklyReport()`: 每周一 09:00 分析上周 SQLite 数据，汇总金额与 TOP1 类别。
-  4. `scheduleMonthlyReport()`: 每月 1 号 09:30 分析上月支出总额与预算结余。
-  5. `setupNotificationListeners(router)`: 监听通知点击响应，记账提醒跳转 `/(modals)/add`，总结提醒跳转概览统计。
-- **权限与状态管理**：首次启动展示专属授权弹窗引导激活，配置状态持久化在 `useSettingsStore` 中，支持在设置页细分开关。
+  - `scheduleDailyReminders()`: 每天按用户自定义的午餐与晚间时刻（默认 12:30 与 21:30）调度精准硬件闹钟。
+  - `checkDailyStatusAndFormat()`: 若当日已记过账，晚间触发温和复盘文案（"今天已记 %{count} 笔账，看看是否还有遗漏的开销 🌙"）。
+  - `scheduleWeeklyReport()`: 每周一 09:00 分析上周 SQLite 数据，汇总金额与 TOP1 类别。
+  - `scheduleMonthlyReport()`: 每月 1 号 09:30 分析上月支出总额与预算结余。
+  - `scheduleOneMinuteAlarmTest()`: 开发者选项 1 分钟后定时闹钟唤醒真实测试。
+  - `setupNotificationListeners(router)`: 监听通知点击响应，记账提醒跳转 `/(modals)/add`，总结提醒跳转概览统计。
+- **权限与状态管理**：首次启动展示专属授权弹窗引导激活，配置状态持久化在 `useSettingsStore` 中，支持在设置页细分开关并自由修改提醒时刻。
 
 #### B. 可追溯、可恢复的全量数据备份与灾备系统 (`services/BackupService.ts`)
 - **可追溯数据协议 (`Schema v1`)**：
