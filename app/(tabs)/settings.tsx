@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Switch, Alert, Linking } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Switch, Alert, Linking, ActivityIndicator } from 'react-native';
 import { useTheme } from '@/src/hooks/useTheme';
 import { router } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -8,6 +8,7 @@ import { BudgetDrawer } from '@/src/components/settings/BudgetDrawer';
 import { ExportDrawer } from '@/src/components/settings/ExportDrawer';
 import { useSettingsStore } from '@/src/stores/useSettingsStore';
 import { NotificationService } from '@/src/services/NotificationService';
+import { UpdateService } from '@/src/services/UpdateService';
 import { t } from '@/src/constants/i18n';
 
 export default function SettingsScreen() {
@@ -29,10 +30,51 @@ export default function SettingsScreen() {
   
   const [budgetVisible, setBudgetVisible] = useState(false);
   const [exportVisible, setExportVisible] = useState(false);
+  const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
 
   useEffect(() => {
     fetchSettings();
   }, []);
+
+  const handleCheckUpdate = async () => {
+    if (isCheckingUpdate) return;
+    setIsCheckingUpdate(true);
+    try {
+      const info = await UpdateService.checkUpdate();
+      if (info.hasUpdate) {
+        Alert.alert(
+          t('settings.update_available_title', { version: info.latestVersion }),
+          t('settings.update_available_desc', {
+            date: info.publishedAt || '最新',
+            notes: info.releaseNotes || '性能优化与体验改进',
+          }),
+          [
+            { text: t('settings.update_later'), style: 'cancel' },
+            {
+              text: t('settings.update_now'),
+              onPress: () => {
+                UpdateService.openDownloadUrl(info.downloadUrl).catch(() => {
+                  Alert.alert(t('settings.check_update_failed'), t('settings.check_update_failed_desc'));
+                });
+              },
+            },
+          ]
+        );
+      } else {
+        Alert.alert(
+          t('settings.already_latest'),
+          t('settings.already_latest_desc', { version: info.currentVersion })
+        );
+      }
+    } catch {
+      Alert.alert(
+        t('settings.check_update_failed'),
+        t('settings.check_update_failed_desc')
+      );
+    } finally {
+      setIsCheckingUpdate(false);
+    }
+  };
 
   const handleToggleDailyReminder = async (val: boolean) => {
     if (val) {
@@ -243,16 +285,22 @@ export default function SettingsScreen() {
         { 
           id: 'version', 
           label: t('settings.version'), 
-          value: `v1.1.0 (${t('settings.stable')})`, 
+          value: isCheckingUpdate 
+            ? t('settings.checking_update') 
+            : `v${UpdateService.getCurrentVersion()} (${t('settings.check_update')})`, 
           icon: 'info', 
-          color: '#64748b' 
+          color: '#64748b',
+          onPress: handleCheckUpdate,
+          right: isCheckingUpdate ? (
+            <ActivityIndicator size="small" color="#3b82f6" />
+          ) : undefined,
         },
         { 
           id: 'github', 
           label: t('settings.github'), 
           icon: 'code', 
           color: '#334155',
-          onPress: () => Linking.openURL('https://github.com')
+          onPress: () => Linking.openURL('https://github.com/rhettholmes3-code/Vault')
         },
       ]
     },

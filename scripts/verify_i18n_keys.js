@@ -46,6 +46,15 @@ for (const file of files) {
   const matches = content.matchAll(/\bt\(\s*['"]([a-zA-Z0-9_.]+)['"]/g);
   for (const match of matches) {
     const key = match[1];
+    // 忽略如 t('category.' + id) 这样的动态拼接前缀
+    if (key.endsWith('.')) {
+      const parentNamespace = key.slice(0, -1);
+      const val = getNestedValue(zh, parentNamespace);
+      if (!val || typeof val !== 'object') {
+        missingKeys.push({ file: path.relative(path.join(__dirname, '..'), file), key });
+      }
+      continue;
+    }
     totalKeyCalls++;
     const val = getNestedValue(zh, key);
     if (val === undefined) {

@@ -152,7 +152,17 @@
     "more_desc": "Data backup & developer options",
     "test_notification": "Send Test Reminder",
     "test_notification_desc": "Trigger local test reminder in 2s",
-    "test_notification_sent": "Test notification scheduled! Background the app within 2s to check."
+    "test_notification_sent": "Test notification scheduled! Background the app within 2s to check.",
+    "check_update": "Check Updates",
+    "checking_update": "Checking for updates...",
+    "already_latest": "Up to Date",
+    "already_latest_desc": "Current version v%{version} is the latest release.",
+    "update_available_title": "New Version Available: v%{version}",
+    "update_available_desc": "Release Date: %{date}\n\nWhat's New:\n%{notes}",
+    "update_now": "Download Update",
+    "update_later": "Later",
+    "check_update_failed": "Update Check Failed",
+    "check_update_failed_desc": "Unable to connect to update server. Please check your network and try again."
   },
   "csv": {
     "date": "Date",

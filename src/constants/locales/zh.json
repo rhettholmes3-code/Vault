@@ -152,7 +152,17 @@
     "more_desc": "数据备份与开发者高级选项",
     "test_notification": "发送测试提醒通知",
     "test_notification_desc": "2秒后触发本地测试提醒",
-    "test_notification_sent": "测试通知已调度，请在 2 秒内切到桌面查看通知栏！"
+    "test_notification_sent": "测试通知已调度，请在 2 秒内切到桌面查看通知栏！",
+    "check_update": "检查更新",
+    "checking_update": "正在检查更新...",
+    "already_latest": "已是最新版本",
+    "already_latest_desc": "当前版本 v%{version} 已是最新稳定版。",
+    "update_available_title": "发现新版本 v%{version}",
+    "update_available_desc": "发布时间：%{date}\n\n更新内容：\n%{notes}",
+    "update_now": "立即下载更新",
+    "update_later": "稍后再说",
+    "check_update_failed": "检查更新失败",
+    "check_update_failed_desc": "无法连接到更新服务器，请检查网络连接后重试。"
   },
   "csv": {
     "date": "日期",

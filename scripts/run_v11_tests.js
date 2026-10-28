@@ -187,6 +187,44 @@ assert(overBudget.includes('超出预算 ¥800.00'), '超支时正确计算并�
 assert(noBudget.includes("Last month's total expense was $4200.00"), '未设置预算时仅展示总支出');
 
 // ----------------------------------------------------
+// 测试模块 5: 语义化版本号比较器逻辑 (compareSemver)
+// ----------------------------------------------------
+console.log('\n【测试模块 5】语义化版本号比较与更新识别校验:');
+
+function compareSemver(v1, v2) {
+  const clean1 = v1.replace(/^v/i, '').trim();
+  const clean2 = v2.replace(/^v/i, '').trim();
+
+  const parts1 = clean1.split('.').map(p => parseInt(p, 10) || 0);
+  const parts2 = clean2.split('.').map(p => parseInt(p, 10) || 0);
+
+  const maxLen = Math.max(parts1.length, parts2.length);
+  for (let i = 0; i < maxLen; i++) {
+    const num1 = parts1[i] || 0;
+    const num2 = parts2[i] || 0;
+    if (num1 > num2) return 1;
+    if (num1 < num2) return -1;
+  }
+  return 0;
+}
+
+assert(compareSemver('1.1.1', '1.1.0') > 0, '1.1.1 > 1.1.0 (次要修订版检测到更新)');
+assert(compareSemver('v1.2.0', '1.1.1') > 0, 'v1.2.0 > 1.1.1 (带 v 前缀与功能版本更新)');
+assert(compareSemver('2.0.0', '1.9.9') > 0, '2.0.0 > 1.9.9 (大版本跨越更新)');
+assert(compareSemver('1.1.0', '1.1.0') === 0, '1.1.0 === 1.1.0 (相同版本无更新)');
+assert(compareSemver('v1.1.0', '1.1.0') === 0, 'v1.1.0 === 1.1.0 (带前缀相等)');
+assert(compareSemver('1.0.9', '1.1.0') < 0, '1.0.9 < 1.1.0 (低版本不触发更新)');
+assert(compareSemver('1.1.0.1', '1.1.0') > 0, '1.1.0.1 > 1.1.0 (支持4位版本号比较)');
+
+// 校验 app.json 与 package.json 版本号单调递增
+const appJson = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'app.json'), 'utf8'));
+const pkgJson = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
+
+assert(appJson.expo.version === pkgJson.version, `app.json (${appJson.expo.version}) 与 package.json (${pkgJson.version}) 版本号一致`);
+assert(appJson.expo.android.versionCode >= 7, `android.versionCode 严格递增至 >= 7 (当前: ${appJson.expo.android.versionCode})`);
+assert(compareSemver(appJson.expo.version, '1.1.0') > 0, `新发布版本号 (${appJson.expo.version}) 高于上一版本 1.1.0`);
+
+// ----------------------------------------------------
 // 测试总结
 // ----------------------------------------------------
 console.log('\n==============================================');
