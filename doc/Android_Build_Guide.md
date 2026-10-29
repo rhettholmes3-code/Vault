@@ -1,8 +1,28 @@
-﻿# Vault Android 最终版打包构建指南（EAS 云端方案）
+# Vault Android 打包构建指南（EAS 云端与本地极简轻量双方案）
 
-根据您的选择，本项目已确定采用 **Expo EAS 云端构建（方案 A）** 进行打包，生成用于真机测试与日常使用的 **APK 安装包**，同时账单导出功能已确认采用**免权限申请的“直接系统分享”机制**（expo-sharing）。
+本项目同时支持 **Expo EAS 云端构建** 与 **本地极简轻量化原生构建** 双通道：
+- **云端构建**：无需本地工具链，通过 EAS 服务器托管签名并生成独立 APK 下载链接与扫码二维码；
+- **本地轻量构建**：仅占用 ~0.68GB，免安装臃肿 Android Studio，本地增量编译 20~30 秒出包，并支持通过 ADB 自动推送到连接的 Samsung 真机。
 
-本指南将为您提供完整的 Android APK 打包实操手册与注意事项。
+---
+
+## 0. 本地极简轻量化原生构建 (本地秒级出包)
+
+### A. 轻量环境配置（已自动化部署）
+- **JDK 17**：部署于 `C:\Users\rhett\.tools\jdk-17`（免装绿色版，无需管理员 UAC 权限）；
+- **Android SDK**：部署于 `C:\Users\rhett\.tools\android-sdk`（包含 `platforms;android-35`、`build-tools;35.0.0`、`platform-tools`，总计仅占 0.68GB）；
+- **构建镜像加速**：Gradle Wrapper 配置腾讯云高速镜像，Maven 依赖集成阿里云 Google / Central 镜像源。
+
+### B. 一键本地构建实操指令
+在 PowerShell 中运行以下一键脚本即可完成本地出包：
+```powershell
+# 1. 本地编译 Release APK
+.\scripts\build_local_apk.ps1 -Mode release
+
+# 2. 本地编译并自动推送到连接的三星真机 (无损覆盖保留 SQLite 数据)
+.\scripts\build_local_apk.ps1 -Mode release -Install
+```
+产出物位于：`android\app\build\outputs\apk\release\app-release.apk`。
 
 ---
 

@@ -144,3 +144,9 @@ eas update --channel production --message "更新说明：修复了趋势图特�
 eas build -p android --profile preview --non-interactive
 ```
 构建产物生成后，Expo 会输出形如 `https://expo.dev/artifacts/eas/...apk` 的下载直链与二维码，支持用户在设备上扫码或点击直接覆盖升级。
+
+### 5.4 客户端更新日志文案规范 (Release Notes Formatting Rule)
+由于移动端原生弹窗 (Alert) 默认不支持 Markdown 语法解析（会把 `###`、`**加粗**` 等标记原样显示，造成视觉凌乱）：
+1. **纯文本点状清单原则**：GitHub Release 的正文严禁使用多级标题、加粗符号或表格语法；
+2. **极简清晰**：统一使用标准圆点符号 `• ` 罗列 3~5 项关键改进（如 `• 修复息屏休眠下定时提醒未准时唤醒的问题`）；
+3. **一目了然**：让用户在原生系统弹窗中一眼看清更新核心价值，保持界面克制、体面与专业质感。
