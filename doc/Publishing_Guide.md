@@ -1,4 +1,4 @@
-﻿# Vault 发布至 Google Play 与 OTA 热更新实操指南
+# Vault 发布至 Google Play 与 OTA 热更新实操指南
 
 本指南将协助您将 Vault 个人记账应用部署并发布至 **Google Play 商店**，同时配置 **Expo Updates (OTA)** 热更新机制，以便在后续无需重复向应用商店提交审核即可更新应用。
 
@@ -120,3 +120,27 @@ eas update --channel production --message "更新说明：修复了趋势图特�
 *   用户打开 Vault 记账应用时，`expo-updates` 会静默在后台检查最新更新。
 *   如果有新更新，它会在后台默默下载。
 *   **在下一次用户重新启动 App 时，最新的 OTA 补丁会直接生效**，带来无缝的静默升级体验。
+
+---
+
+## 5. 📱 Android 独立 APK 构建与覆盖更新规范 (Zero Data Loss Protocol)
+
+为确保离线用户设备上的历史数据绝对安全，版本发布必须遵守：
+
+### 5.1 覆盖升级与版本单调递增
+1. **数据沙盒机制**：独立 APK 数据库位于 Android 私有沙盒 `/data/data/com.rhettholmes.vault/databases/vault.db`。系统覆盖升级（In-Place Upgrade）仅替换 bundle，Android 系统级保障私有数据目录不被擦除。**严禁卸载重装**。
+2. **版本号递增**：每次发版，`package.json` 与 `app.json` 的 `version` 需语义化递增（如 `1.1.2` -> `1.2.0`），`android.versionCode` 必须严格单调递增（如 `8` -> `9`）。
+
+### 5.2 发布前必过四大自动化门禁
+任何构建触发前必须 100% 依次通过：
+1. `npx tsc --noEmit`：0 错误 0 警告；
+2. `node scripts/verify_i18n_keys.js`：0 漏翻死键；
+3. `node scripts/run_v11_tests.js`：540+ 项测试（**含老版本数据库覆盖升级零数据损毁回归测试**）；
+4. `npx expo export --platform android`：Hermes HBC 生产字节码编译预检。
+
+### 5.3 EAS 独立 APK 构建命令
+```bash
+# 触发独立 APK 云端打包
+eas build -p android --profile preview --non-interactive
+```
+构建产物生成后，Expo 会输出形如 `https://expo.dev/artifacts/eas/...apk` 的下载直链与二维码，支持用户在设备上扫码或点击直接覆盖升级。
