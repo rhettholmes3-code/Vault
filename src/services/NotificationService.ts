@@ -43,7 +43,7 @@ export const NotificationService = {
   },
 
   /**
-   * 检查并请求系统通知权限
+   * 检查并请求系统通知权限 (含 Android 12+ 精确闹钟权限)
    */
   requestPermissions: async (): Promise<boolean> => {
     try {
@@ -53,6 +53,19 @@ export const NotificationService = {
         const { status } = await Notifications.requestPermissionsAsync();
         finalStatus = status;
       }
+
+      // Android 12+ 检查并申请精确闹钟调度权限
+      if (Platform.OS === 'android' && typeof (Notifications as any).getExactAlarmPermissionsAsync === 'function') {
+        try {
+          const exactAlarmStatus = await (Notifications as any).getExactAlarmPermissionsAsync();
+          if (!exactAlarmStatus?.granted && typeof (Notifications as any).requestExactAlarmPermissionsAsync === 'function') {
+            await (Notifications as any).requestExactAlarmPermissionsAsync();
+          }
+        } catch (alarmErr) {
+          console.warn('[NotificationService] 精确闹钟权限请求忽略:', alarmErr);
+        }
+      }
+
       return finalStatus === 'granted';
     } catch (e) {
       console.warn('[NotificationService] 请求通知权限失败:', e);

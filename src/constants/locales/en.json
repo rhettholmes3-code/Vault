@@ -151,7 +151,7 @@
     "dev_reminders": "Reminder Diagnostics",
     "dev_data": "Data Maintenance",
     "daily_reminder": "Daily Logging Reminders",
-    "daily_reminder_desc": "Reminders at 12:30 and 21:30 daily",
+    "daily_reminder_desc": "Remind you to log transactions at scheduled times",
     "periodic_summary": "Weekly / Monthly Reports",
     "periodic_summary_desc": "Summaries every Monday 09:00 & 1st of month 09:30",
     "backup_title": "Data Security & Backup",
@@ -180,7 +180,7 @@
     "battery_guide": "Punctual Reminder Guide",
     "battery_guide_desc": "Disable battery optimization & allow auto-start",
     "battery_guide_title": "How to Ensure Punctual Alerts?",
-    "battery_guide_content": "Android restricts idle background apps to save battery.\n\nTo ensure timely alerts:\n1. Tap 'Go to Settings' below;\n2. In 'Battery Optimization', select 'Unrestricted' or 'Don't optimize';\n3. Allow 'Auto-start' and 'Background pop-up' permissions.",
+    "battery_guide_content": "Android systems (especially Samsung and OEM ROMs) restrict idle background apps to save battery.\n\nTo ensure timely alerts when locked:\n1. Tap 'Go to Settings' below;\n2. In 'Battery', select 'Unrestricted' instead of 'Optimized';\n3. If available, allow 'Alarms & reminders' and 'Auto-start'.",
     "go_to_app_settings": "Go to Settings"
   },
   "csv": {

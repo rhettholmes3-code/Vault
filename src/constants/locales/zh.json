@@ -151,7 +151,7 @@
     "dev_reminders": "提醒唤醒诊断",
     "dev_data": "数据维护与模拟",
     "daily_reminder": "每日记账提醒",
-    "daily_reminder_desc": "每天 12:30 与 21:30 推送记账提醒",
+    "daily_reminder_desc": "在设定的午间与晚间时刻推送记账提醒",
     "periodic_summary": "周/月支出总结",
     "periodic_summary_desc": "每周一 09:00 与每月 1 号 09:30 总结支出",
     "backup_title": "数据安全与备份",
@@ -180,7 +180,7 @@
     "battery_guide": "准时提醒排查指南",
     "battery_guide_desc": "引导开启系统后台无限制、允许自启动与白名单",
     "battery_guide_title": "如何确保系统准点提醒？",
-    "battery_guide_content": "Android 系统为延长续航，默认会对后台静置应用进行休眠限制。\n\n如需确保准点提醒：\n1. 点击下方【前往系统设置】；\n2. 找到【省电策略 / 电池优化】，选择【无限制】或【不优化】；\n3. 允许【自启动】与【后台弹出界面】权限。",
+    "battery_guide_content": "Android 系统（尤其是三星及国产系统）默认会对后台静置应用进行休眠限制。\n\n如需确保息屏准点提醒：\n1. 点击下方【前往系统设置】；\n2. 找到【电池】（Battery），选择【无限制】（Unrestricted）而非“优化”；\n3. 若有【自启动】与【闹钟与提醒】，请设置为“允许”。",
     "go_to_app_settings": "前往系统设置"
   },
   "csv": {
