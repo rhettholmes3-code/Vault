@@ -221,8 +221,8 @@ const appJson = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'app.json'
 const pkgJson = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
 
 assert(appJson.expo.version === pkgJson.version, `app.json (${appJson.expo.version}) 与 package.json (${pkgJson.version}) 版本号一致`);
-assert(appJson.expo.android.versionCode >= 8, `android.versionCode 严格递增至 >= 8 (当前: ${appJson.expo.android.versionCode})`);
-assert(compareSemver(appJson.expo.version, '1.1.1') > 0, `新发布版本号 (${appJson.expo.version}) 高于上一版本 1.1.1`);
+assert(appJson.expo.android.versionCode >= 9, `android.versionCode 严格递增至 >= 9 (当前: ${appJson.expo.android.versionCode})`);
+assert(compareSemver(appJson.expo.version, '1.1.2') > 0, `新发布版本号 (${appJson.expo.version}) 高于上一版本 1.1.2`);
 
 // ----------------------------------------------------
 // 测试模块 6: Android 原生精确闹钟与后台唤醒权限校验
@@ -246,6 +246,104 @@ assert(validateTimeFormat('09:05'), '合法时间格式 09:05 校验通过');
 assert(validateTimeFormat('23:59'), '合法时间格式 23:59 校验通过');
 assert(!validateTimeFormat('24:00'), '非法时间 24:00 被正确拦截');
 assert(!validateTimeFormat('12:60'), '非法时间 12:60 被正确拦截');
+
+// ----------------------------------------------------
+// 测试模块 7: 老版本覆盖升级零数据损毁回归测试 (Zero Data Loss Protocol)
+// ----------------------------------------------------
+console.log('\n【测试模块 7】老版本数据库覆盖升级与零数据损毁迁移测试:');
+
+try {
+  const { DatabaseSync } = require('node:sqlite');
+  const db = new DatabaseSync(':memory:');
+
+  // 1. 模拟老版本历史数据库状态（含真实老用户历史数据）
+  db.exec(`
+    CREATE TABLE transactions (
+      id TEXT PRIMARY KEY,
+      type TEXT NOT NULL,
+      amount REAL NOT NULL,
+      category TEXT NOT NULL,
+      date TEXT NOT NULL,
+      note TEXT DEFAULT '',
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
+    CREATE TABLE settings (
+      key TEXT PRIMARY KEY,
+      value TEXT
+    );
+    CREATE TABLE categories (
+      id TEXT NOT NULL,
+      type TEXT NOT NULL,
+      name TEXT NOT NULL,
+      icon TEXT NOT NULL,
+      color TEXT NOT NULL,
+      bg TEXT NOT NULL,
+      is_active INTEGER NOT NULL DEFAULT 1,
+      is_custom INTEGER NOT NULL DEFAULT 0,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at INTEGER NOT NULL,
+      PRIMARY KEY (id, type)
+    );
+  `);
+
+  // 写入老用户历史财务记录
+  db.exec(`
+    INSERT INTO transactions VALUES
+      ('tx_001', 'expense', 45.5, 'food', '2026-05-10', '老版本午餐', 1715330000000, 1715330000000),
+      ('tx_002', 'income', 10000, 'salary', '2026-05-15', '老版本工资', 1715760000000, 1715760000000),
+      ('tx_003', 'expense', 199.9, 'shopping', '2026-10-01', '真实流水购买', 1727770000000, 1727770000000);
+
+    INSERT INTO settings VALUES
+      ('monthlyBudget', '6000'),
+      ('currencyPreference', 'CNY'),
+      ('languagePreference', 'zh'),
+      ('dailyReminderLunchTime', '12:00'),
+      ('dailyReminderEveningTime', '21:00');
+
+    INSERT INTO categories VALUES
+      ('custom_coffee', 'expense', '咖啡', 'local-cafe', '#795548', '#EFEBE9', 1, 1, 1, 1715330000000);
+  `);
+
+  // 2. 读取项目新版本的 DDL 迁移文件
+  const schemaFile = fs.readFileSync(path.join(__dirname, '..', 'src', 'database', 'schema.ts'), 'utf8');
+  const ddlMatch = schemaFile.match(/export const CREATE_TABLES_SCHEMA = `([\s\S]+?)`;/);
+  assert(ddlMatch && ddlMatch[1], '成功从 src/database/schema.ts 解析出 CREATE_TABLES_SCHEMA DDL');
+
+  const ddl = ddlMatch[1];
+
+  // 3. 执行覆盖升级（在新版本启动流程中执行 schema 初始化）
+  db.exec(ddl);
+
+  // 4. 验证历史交易流水 100% 毫发无损
+  const txRows = db.prepare('SELECT * FROM transactions ORDER BY id ASC').all();
+  assert(txRows.length === 3, '老版本历史交易笔数 100% 保持为 3 笔');
+  assert(txRows[0].id === 'tx_001' && txRows[0].amount === 45.5 && txRows[0].note === '老版本午餐', '第一笔老交易数据内容完全一致');
+  assert(txRows[1].id === 'tx_002' && txRows[1].amount === 10000 && txRows[1].note === '老版本工资', '第二笔老收入数据内容完全一致');
+  assert(txRows[2].id === 'tx_003' && txRows[2].amount === 199.9 && txRows[2].note === '真实流水购买', '第三笔老流水数据内容完全一致');
+
+  // 5. 验证设置项 100% 保持
+  const settingRows = db.prepare('SELECT * FROM settings').all();
+  const settingMap = Object.fromEntries(settingRows.map(r => [r.key, r.value]));
+  assert(settingMap.monthlyBudget === '6000', '老用户月度预算配置保持为 6000');
+  assert(settingMap.currencyPreference === 'CNY', '老用户货币配置保持为 CNY');
+  assert(settingMap.languagePreference === 'zh', '老用户语言配置保持为 zh');
+  assert(settingMap.dailyReminderLunchTime === '12:00', '老用户自定义午间提醒时刻未被覆盖');
+  assert(settingMap.dailyReminderEveningTime === '21:00', '老用户自定义晚间提醒时刻未被覆盖');
+
+  // 6. 验证自定义分类 100% 保持
+  const catRows = db.prepare('SELECT * FROM categories WHERE id = ?').all('custom_coffee');
+  assert(catRows.length === 1 && catRows[0].name === '咖啡', '老用户自定义分类 100% 完好无损');
+
+  // 7. 幂等性测试：再次执行相同的 DDL，绝无报错且数据无损
+  db.exec(ddl);
+  const txRowsAfter = db.prepare('SELECT COUNT(*) as count FROM transactions').get();
+  assert(txRowsAfter.count === 3, '重复执行 schema 初始化具备完全幂等性，老数据绝不丢失');
+
+  db.close();
+} catch (e) {
+  assert(false, `老版本覆盖升级迁移测试失败: ${e.message}`);
+}
 
 // ----------------------------------------------------
 // 测试总结
